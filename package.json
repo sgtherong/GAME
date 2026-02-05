@@ -1,0 +1,13 @@
+{
+  "name": "goldenblast-blockblast-clone",
+  "version": "1.0.0",
+  "description": "간단한 블록블래스트 스타일 퍼즐 게임 (HTML/CSS/JS)",
+  "scripts": {
+    "start": "npx serve ."
+  },
+  "keywords": [
+    "blockblast",
+    "puzzle",
+    "browser-game"
+  ]
+}
