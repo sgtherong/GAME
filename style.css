@@ -509,7 +509,7 @@ body {
 
 .board {
   --size: 8;
-  width: min(72vmin, 100%);
+  width: min(78vmin, 100%);
   max-width: 100%;
   margin: 0 auto;
   display: grid;
@@ -671,17 +671,17 @@ body {
   color: var(--muted);
 }
 
-/* 5×1 블럭 기준 슬롯 크기 (블럭 약 70% 크기) */
+/* 블럭 선택 창: 슬롯·블럭 축소 */
 .pieces-container {
-  --tray-cell: 22px;
-  --tray-slot: calc(var(--tray-cell) * 5 + 12px);
+  --tray-cell: 17px;
+  --tray-slot: calc(var(--tray-cell) * 5 + 10px);
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
   align-items: center;
   justify-content: center;
-  gap: 20px;
-  min-height: 100px;
+  gap: 14px;
+  min-height: 80px;
   min-width: 0;
 }
 
@@ -754,19 +754,18 @@ body {
   overflow: hidden;
 }
 
-/* 블록 선택 창: 70% 크기 */
 .pieces-container .piece-cell {
-  width: 22px;
-  height: 22px;
+  width: 17px;
+  height: 17px;
 }
 
 .pieces-container .piece-empty {
-  width: 22px;
-  height: 22px;
+  width: 17px;
+  height: 17px;
 }
 
 .pieces-container .piece {
-  padding: 5px;
+  padding: 3px;
   gap: 0;
 }
 
@@ -948,17 +947,32 @@ body {
   }
 
   .header {
+    display: flex;
     flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
+    align-items: stretch;
+    gap: 10px;
+    min-height: 0;
+  }
+
+  .title-group {
+    order: 1;
+    text-align: center;
   }
 
   .score-panel {
+    order: 2;
     align-self: center;
     flex-wrap: wrap;
     gap: 10px;
     max-width: 100%;
     justify-content: center;
+  }
+
+  .header .last-gain {
+    order: 3;
+    justify-self: center;
+    text-align: center;
+    max-width: 100%;
   }
 
   .score-box {
@@ -982,7 +996,7 @@ body {
 
   .pieces-container {
     gap: 14px;
-    min-height: 100px;
+    min-height: 80px;
     flex-wrap: nowrap;
     justify-content: center;
   }
@@ -1014,47 +1028,64 @@ body {
   .header {
     flex-shrink: 0;
     min-height: 0;
-    gap: 4px;
+    gap: 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .title-group {
+    order: 1;
+    flex-shrink: 0;
+    text-align: center;
   }
 
   .game-title {
-    font-size: 1.2rem;
-    letter-spacing: 0.06em;
+    font-size: 1.1rem;
+    letter-spacing: 0.05em;
   }
 
   .subtitle {
-    font-size: 0.65rem;
-    margin-top: 1px;
+    font-size: 0.6rem;
+    margin-top: 0;
   }
 
   .score-panel {
+    order: 2;
     align-self: center;
-    gap: 8px;
+    gap: 6px;
     justify-content: center;
+    flex-shrink: 0;
   }
 
   .score-box {
-    padding: 6px 8px;
-    min-width: 88px;
-    max-width: 160px;
+    padding: 4px 6px;
+    min-width: 72px;
+    max-width: 100px;
     overflow: visible;
   }
 
   .score-box .label {
-    font-size: 0.8rem;
+    font-size: 0.7rem;
     overflow: visible;
   }
 
   .score-box .value {
-    font-size: 1.35rem;
+    font-size: 1.15rem;
     overflow: visible;
   }
 
+  .header .last-gain {
+    order: 3;
+    justify-self: center;
+    text-align: center;
+  }
+
   .last-gain {
-    min-height: 1.1em;
-    height: 1.1em;
-    line-height: 1.1em;
-    font-size: 0.65rem;
+    min-height: 1em;
+    height: 1em;
+    line-height: 1em;
+    font-size: 0.6rem;
     min-width: 0;
     max-width: 100%;
   }
@@ -1086,7 +1117,7 @@ body {
   }
 
   .board {
-    width: min(70vmin, 100%);
+    width: min(76vmin, 100%);
     max-width: 100%;
     max-height: 100%;
     padding: 2px;
@@ -1095,19 +1126,19 @@ body {
 
   .pieces-section {
     flex-shrink: 0;
-    padding: 6px 8px;
+    padding: 4px 6px;
   }
 
   .pieces-title {
-    margin: 0 0 4px;
-    font-size: 0.8rem;
+    margin: 0 0 2px;
+    font-size: 0.75rem;
   }
 
   .pieces-container {
-    --tray-cell: 15px;
-    --tray-slot: calc(var(--tray-cell) * 5 + 8px);
-    min-height: 56px;
-    gap: 10px;
+    --tray-cell: 12px;
+    --tray-slot: calc(var(--tray-cell) * 5 + 6px);
+    min-height: 48px;
+    gap: 8px;
     flex-wrap: nowrap;
     justify-content: center;
   }
@@ -1120,17 +1151,17 @@ body {
   }
 
   .pieces-container .piece-cell {
-    width: 15px;
-    height: 15px;
+    width: 12px;
+    height: 12px;
   }
 
   .pieces-container .piece-empty {
-    width: 15px;
-    height: 15px;
+    width: 12px;
+    height: 12px;
   }
 
   .pieces-container .piece {
-    padding: 3px;
+    padding: 2px;
   }
 
   .footer {
