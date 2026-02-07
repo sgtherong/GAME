@@ -90,18 +90,18 @@ const SHAPES = [
   ],
 ];
 
-/** 블록별 배치 난이도 가중치 (높을수록 맞추기 쉬운 블록 → 나올 확률 높음) */
+/** 블록별 배치 난이도 가중치 (쉬운 블록 비율 더 높임) */
 const SHAPE_WEIGHTS = [
-  4, 4,       // 0,1: 두 칸 직선
-  3, 3,       // 2,3: 세 칸 직선
-  2, 2,       // 4,5: 네 칸 직선
-  1, 1,       // 6,7: 다섯 칸 직선
-  3,          // 8: 2×2 정사각
-  2, 2,       // 9,10: 3×2, 2×3
+  6, 6,       // 0,1: 두 칸 직선
+  5, 5,       // 2,3: 세 칸 직선
+  3, 3,       // 4,5: 네 칸 직선
+  2, 2,       // 6,7: 다섯 칸 직선
+  5,          // 8: 2×2 정사각
+  3, 3,       // 9,10: 3×2, 2×3
   1,          // 11: 3×3
-  1, 1, 1, 1, // 12–15: L자
-  1, 1,       // 16,17: 계단
-  1, 1, 1, 1, // 18–21: T자
+  2, 2, 2, 2, // 12–15: L자
+  2, 2,       // 16,17: 계단
+  2, 2, 2, 2, // 18–21: T자
 ];
 
 let board = createEmptyBoard();
@@ -541,11 +541,12 @@ function countValidPlacements(shape) {
   return count;
 }
 
-/** 보드 상황에 맞는 블럭 가중치 (놓을 수 있는 위치가 많을수록 확률 상승) */
+/** 보드 상황에 맞는 블럭 가중치: 놓을 수 없으면 0, 놓을 수 있으면 보드에 맞을수록 확률 up */
 function getBoardAwareWeights() {
   return SHAPE_WEIGHTS.map((base, i) => {
     const placements = countValidPlacements(SHAPES[i]);
-    return base * (1 + placements);
+    if (placements === 0) return 0;
+    return base * (2 + placements);
   });
 }
 
@@ -920,6 +921,7 @@ function onPieceTouchStart(e) {
 
   window.addEventListener('touchmove', onTouchMove, { passive: false });
   window.addEventListener('touchend', onTouchEnd);
+  window.addEventListener('touchcancel', onTouchCancel);
 }
 
 const DRAG_GHOST_OFFSET_Y = 100;
@@ -962,19 +964,30 @@ function updateGhostPosition(clientX, clientY) {
   applyPreview(dragging.shape, baseRow, baseCol, isValid);
 }
 
+function removeDragListeners() {
+  window.removeEventListener('mousemove', onMouseMove);
+  window.removeEventListener('mouseup', onMouseUp);
+  window.removeEventListener('touchmove', onTouchMove);
+  window.removeEventListener('touchend', onTouchEnd);
+  window.removeEventListener('touchcancel', onTouchCancel);
+}
+
+function cleanupDrag() {
+  if (!dragging) return;
+  const { pieceIndex, ghost } = dragging;
+  const pieceEl = piecesEl.querySelector(`.piece[data-index="${pieceIndex}"]`);
+  if (pieceEl) pieceEl.classList.remove('dragging');
+  if (ghost && ghost.parentNode) ghost.parentNode.removeChild(ghost);
+  clearPreview();
+  removeDragListeners();
+  dragging = null;
+}
+
 function finishDrag(clientX, clientY) {
   if (!dragging) return;
 
   const { pieceIndex, shape } = dragging;
-
   const pieceEl = piecesEl.querySelector(`.piece[data-index="${pieceIndex}"]`);
-  if (pieceEl) {
-    pieceEl.classList.remove('dragging');
-  }
-
-  if (dragging.ghost && dragging.ghost.parentNode) {
-    dragging.ghost.parentNode.removeChild(dragging.ghost);
-  }
 
   const rows = shape.length;
   const cols = shape[0].length;
@@ -1002,7 +1015,6 @@ function finishDrag(clientX, clientY) {
       generatePieces();
     }
 
-    // 게임 오버 검사: 줄이 지워진 경우 보드가 갱신된 뒤(애니메이션 종료 후)에 검사해야 함
     const checkGameOver = () => {
       if (!hasAnyValidMove()) handleGameOver();
     };
@@ -1014,11 +1026,12 @@ function finishDrag(clientX, clientY) {
     }
   }
 
+  if (dragging.ghost && dragging.ghost.parentNode) {
+    dragging.ghost.parentNode.removeChild(dragging.ghost);
+  }
+  if (pieceEl) pieceEl.classList.remove('dragging');
+  removeDragListeners();
   dragging = null;
-  window.removeEventListener('mousemove', onMouseMove);
-  window.removeEventListener('mouseup', onMouseUp);
-  window.removeEventListener('touchmove', onTouchMove);
-  window.removeEventListener('touchend', onTouchEnd);
 }
 
 function onMouseMove(e) {
@@ -1038,8 +1051,23 @@ function onTouchMove(e) {
 }
 
 function onTouchEnd(e) {
-  const touch = e.changedTouches[0];
-  finishDrag(touch.clientX, touch.clientY);
+  e.preventDefault();
+  const touch = e.changedTouches && e.changedTouches[0];
+  if (touch) {
+    finishDrag(touch.clientX, touch.clientY);
+  } else {
+    cleanupDrag();
+  }
+}
+
+function onTouchCancel(e) {
+  e.preventDefault();
+  const touch = e.changedTouches && e.changedTouches[0];
+  if (touch) {
+    finishDrag(touch.clientX, touch.clientY);
+  } else {
+    cleanupDrag();
+  }
 }
 
 function hasAnyValidMove() {
@@ -1126,11 +1154,7 @@ function handleGameOver() {
 }
 
 function resetGame() {
-  if (dragging && dragging.ghost && dragging.ghost.parentNode) {
-    dragging.ghost.parentNode.removeChild(dragging.ghost);
-  }
-  dragging = null;
-  clearPreview();
+  cleanupDrag();
   board = createEmptyBoard();
   cellVariants = Array.from({ length: BOARD_SIZE }, () => Array(BOARD_SIZE).fill(null));
   score = 0;

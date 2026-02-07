@@ -212,7 +212,7 @@ body {
 
 .combo-popup {
   position: absolute;
-  font-size: clamp(4.2rem, 12vw, 6.6rem);
+  font-size: clamp(3rem, 9vw, 5rem);
   font-weight: 800;
   color: #fef08a;
   text-shadow:
