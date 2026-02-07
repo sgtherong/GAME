@@ -317,6 +317,11 @@ body {
   80% { transform: translate(3px, -1px); }
 }
 
+@keyframes pieceAppear {
+  from { opacity: 0; transform: scale(0.85); }
+  to { opacity: 1; transform: scale(1); }
+}
+
 /* 전체 클리어: 보드 알록달록 */
 .board-wrap.board-rainbow {
   animation: boardRainbow 3s ease-in-out;
@@ -602,6 +607,16 @@ body {
   transform: translateY(-1px);
 }
 
+.cell.cell-pop .cell-inner {
+  animation: cellPop 0.22s ease-out;
+}
+
+@keyframes cellPop {
+  0% { transform: scale(0.4); opacity: 0.6; }
+  70% { transform: scale(1.08); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
 .cell.preview-okay .cell-inner {
   background: linear-gradient(145deg, #4ade80, #22c55e);
   box-shadow: 0 0 12px rgba(34, 197, 94, 0.65);
@@ -721,6 +736,10 @@ body {
   transition: transform 0.15s ease-out, box-shadow 0.15s ease-out,
     background 0.15s ease-out, opacity 0.2s ease-out;
   max-width: 100%;
+}
+
+.piece.piece-appear {
+  animation: pieceAppear 0.28s ease-out forwards;
 }
 
 .piece.dragging {
@@ -904,10 +923,25 @@ body {
   justify-content: center;
   align-items: center;
   z-index: 200;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.25s ease-out, visibility 0.25s ease-out;
 }
 
 .modal.hidden {
-  display: none;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.modal:not(.hidden) {
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.modal.modal-visible {
+  opacity: 1;
 }
 
 .modal-content {
@@ -920,6 +954,14 @@ body {
   box-shadow:
     0 16px 40px rgba(0, 0, 0, 0.6),
     inset 0 1px 0 rgba(212, 168, 75, 0.15);
+  transform: scale(0.9);
+  opacity: 0;
+  transition: transform 0.28s ease-out, opacity 0.28s ease-out;
+}
+
+.modal.modal-visible .modal-content {
+  transform: scale(1);
+  opacity: 1;
 }
 
 .modal-content h2 {

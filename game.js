@@ -90,8 +90,19 @@ const SHAPES = [
   ],
 ];
 
-/** 정사각형 블록 인덱스 (2×2, 3×3) — 배정 비율 높임 */
-const SQUARE_SHAPE_INDICES = [8, 11]; // SHAPES에서 2×2, 3×3
+/** 블록별 배치 난이도 가중치 (높을수록 맞추기 쉬운 블록 → 나올 확률 높음) */
+const SHAPE_WEIGHTS = [
+  4, 4,       // 0,1: 두 칸 직선
+  3, 3,       // 2,3: 세 칸 직선
+  2, 2,       // 4,5: 네 칸 직선
+  1, 1,       // 6,7: 다섯 칸 직선
+  3,          // 8: 2×2 정사각
+  2, 2,       // 9,10: 3×2, 2×3
+  1,          // 11: 3×3
+  1, 1, 1, 1, // 12–15: L자
+  1, 1,       // 16,17: 계단
+  1, 1, 1, 1, // 18–21: T자
+];
 
 let board = createEmptyBoard();
 /** 보드 각 칸의 금괴 색상 변형(0~4). null이면 빈 칸 */
@@ -408,10 +419,16 @@ function floatScorePopup(points) {
 }
 
 function createRandomPiece() {
-  const isSquare = Math.random() < 0.4;
-  const index = isSquare
-    ? SQUARE_SHAPE_INDICES[Math.floor(Math.random() * SQUARE_SHAPE_INDICES.length)]
-    : Math.floor(Math.random() * SHAPES.length);
+  const totalWeight = SHAPE_WEIGHTS.reduce((s, w) => s + w, 0);
+  let r = Math.random() * totalWeight;
+  let index = 0;
+  for (let i = 0; i < SHAPE_WEIGHTS.length; i++) {
+    r -= SHAPE_WEIGHTS[i];
+    if (r <= 0) {
+      index = i;
+      break;
+    }
+  }
   const shape = SHAPES[index];
   return shape.map((row) => row.slice());
 }
@@ -464,6 +481,7 @@ function renderPieces() {
     piece.addEventListener('mousedown', onPieceMouseDown);
     piece.addEventListener('touchstart', onPieceTouchStart, { passive: false });
 
+    piece.classList.add('piece-appear');
     wrapper.appendChild(piece);
     piecesEl.appendChild(wrapper);
   });
@@ -512,6 +530,7 @@ function placeShape(shape, baseRow, baseCol, variant) {
   const cols = shape[0].length;
   let placedCount = 0;
   const v = variant != null ? variant : 0;
+  const filledCells = [];
 
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
@@ -522,6 +541,7 @@ function placeShape(shape, baseRow, baseCol, variant) {
           board[br][bc] = 1;
           cellVariants[br][bc] = v;
           placedCount++;
+          filledCells.push({ r: br, c: bc });
         }
       }
     }
@@ -529,7 +549,10 @@ function placeShape(shape, baseRow, baseCol, variant) {
 
   playPlaceSound();
 
-  const cleared = clearCompletedLines();
+  const clearResult = clearCompletedLines();
+  const cleared = typeof clearResult === 'number' ? clearResult : clearResult.count;
+  const fullRows = clearResult.fullRows || [];
+  const fullCols = clearResult.fullCols || [];
   let gainText = `+${placedCount} block${placedCount !== 1 ? 's' : ''}`;
   let lineScore = 0;
   let totalGain = placedCount;
@@ -566,6 +589,19 @@ function placeShape(shape, baseRow, baseCol, variant) {
   updateScoreDisplays(gainText);
 
   renderBoard();
+
+  const clearedSet = new Set();
+  fullRows.forEach((r) => { for (let c = 0; c < BOARD_SIZE; c++) clearedSet.add(`${r},${c}`); });
+  fullCols.forEach((c) => { for (let r = 0; r < BOARD_SIZE; r++) clearedSet.add(`${r},${c}`); });
+  filledCells.forEach(({ r, c }) => {
+    if (clearedSet.has(`${r},${c}`)) return;
+    const cell = boardEl.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);
+    if (cell) {
+      cell.classList.add('cell-pop');
+      setTimeout(() => cell.classList.remove('cell-pop'), 220);
+    }
+  });
+
   return cleared;
 }
 
@@ -597,6 +633,7 @@ function clearCompletedLines() {
   if (fullRows.length === 0 && fullCols.length === 0) return 0;
 
   const isFullClear = wouldBoardBeEmptyAfterClear(fullRows, fullCols);
+  const returnValue = { count: fullRows.length + fullCols.length, fullRows, fullCols };
 
   // 보드 번쩍임
   if (boardWrap) {
@@ -652,7 +689,7 @@ function clearCompletedLines() {
     if (isFullClear) triggerFullClearCelebration();
   }, 260 + extraDelay);
 
-  return fullRows.length + fullCols.length;
+  return returnValue;
 }
 
 function wouldBoardBeEmptyAfterClear(fullRows, fullCols) {
@@ -1059,6 +1096,9 @@ function handleGameOver() {
   playGameOverSound();
   finalScoreEl.textContent = score;
   gameOverModal.classList.remove('hidden');
+  requestAnimationFrame(() => {
+    gameOverModal.classList.add('modal-visible');
+  });
 }
 
 function resetGame() {
@@ -1081,6 +1121,7 @@ function resetGame() {
   if (piecesEl) piecesEl.innerHTML = '';
   generatePieces();
   gameOverModal.classList.add('hidden');
+  gameOverModal.classList.remove('modal-visible');
 }
 
 resetBtn.addEventListener('click', resetGame);
