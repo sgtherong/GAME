@@ -69,6 +69,25 @@ const SHAPES = [
     [1, 1],
     [1, 0],
   ],
+  // 삿갓(T) 모양 4방향
+  [
+    [1, 1, 1],
+    [0, 1, 0],
+  ],
+  [
+    [1, 0],
+    [1, 1],
+    [1, 0],
+  ],
+  [
+    [0, 1, 0],
+    [1, 1, 1],
+  ],
+  [
+    [0, 1],
+    [1, 1],
+    [0, 1],
+  ],
 ];
 
 let board = createEmptyBoard();
@@ -395,7 +414,6 @@ function generatePieces() {
     createRandomPiece(),
     createRandomPiece(),
     createRandomPiece(),
-    createRandomPiece(),
   ];
   activeVariants = activePieces.map(() => Math.floor(Math.random() * GOLD_VARIANT_COUNT));
   renderPieces();
@@ -571,6 +589,14 @@ function clearCompletedLines() {
 
   if (fullRows.length === 0 && fullCols.length === 0) return 0;
 
+  // 보드 번쩍임
+  if (boardWrap) {
+    boardWrap.classList.remove('board-flash');
+    void boardWrap.offsetWidth;
+    boardWrap.classList.add('board-flash');
+    setTimeout(() => boardWrap.classList.remove('board-flash'), 520);
+  }
+
   // 파티클 스폰 (번쩍번쩍 + 날아가는 효과)
   spawnClearParticles(fullRows, fullCols);
 
@@ -716,7 +742,7 @@ function createGhostPiece(shape, startX, startY) {
 
   document.body.appendChild(ghost);
   ghost.style.left = `${startX}px`;
-  ghost.style.top = `${startY}px`;
+  ghost.style.top = `${startY - DRAG_GHOST_OFFSET_Y}px`;
   return ghost;
 }
 
@@ -767,22 +793,42 @@ function onPieceTouchStart(e) {
   window.addEventListener('touchend', onTouchEnd);
 }
 
+const DRAG_GHOST_OFFSET_Y = 100;
+const GHOST_CELL = 18;
+const GHOST_GAP = 4;
+const GHOST_PAD = 10;
+
+function getGhostBottomLeft(clientX, clientY, shapeRows, shapeCols) {
+  const ghostY = clientY - DRAG_GHOST_OFFSET_Y;
+  const ghostW = GHOST_PAD * 2 + shapeCols * GHOST_CELL + (shapeCols - 1) * GHOST_GAP;
+  const ghostH = GHOST_PAD * 2 + shapeRows * GHOST_CELL + (shapeRows - 1) * GHOST_GAP;
+  return {
+    x: clientX - ghostW / 2,
+    y: ghostY + ghostH / 2,
+  };
+}
+
 function updateGhostPosition(clientX, clientY) {
   if (!dragging || !dragging.ghost) return;
+  const ghostY = clientY - DRAG_GHOST_OFFSET_Y;
   dragging.ghost.style.left = `${clientX}px`;
-  dragging.ghost.style.top = `${clientY}px`;
+  dragging.ghost.style.top = `${ghostY}px`;
 
-  const cellPos = getBoardCellFromPoint(clientX, clientY);
+  const rows = dragging.shape.length;
+  const cols = dragging.shape[0].length;
+  const bottomLeft = getGhostBottomLeft(clientX, clientY, rows, cols);
+  const cellPos = getBoardCellFromPoint(bottomLeft.x, bottomLeft.y);
   if (!cellPos) {
     clearPreview();
     return;
   }
 
-  const rows = dragging.shape.length;
-  const cols = dragging.shape[0].length;
-
-  const baseRow = cellPos.row;
+  const baseRow = cellPos.row - (rows - 1);
   const baseCol = cellPos.col;
+  if (baseRow < 0) {
+    clearPreview();
+    return;
+  }
   const isValid = canPlace(dragging.shape, baseRow, baseCol);
   applyPreview(dragging.shape, baseRow, baseCol, isValid);
 }
@@ -801,10 +847,15 @@ function finishDrag(clientX, clientY) {
     dragging.ghost.parentNode.removeChild(dragging.ghost);
   }
 
-  const cellPos = getBoardCellFromPoint(clientX, clientY);
+  const rows = shape.length;
+  const cols = shape[0].length;
+  const bottomLeft = getGhostBottomLeft(clientX, clientY, rows, cols);
+  const cellPos = getBoardCellFromPoint(bottomLeft.x, bottomLeft.y);
   clearPreview();
 
-  if (cellPos && canPlace(shape, cellPos.row, cellPos.col)) {
+  const baseRow = cellPos ? cellPos.row - (rows - 1) : -1;
+  const baseCol = cellPos ? cellPos.col : 0;
+  if (cellPos && baseRow >= 0 && canPlace(shape, baseRow, baseCol)) {
     let variant = 0;
     if (pieceEl) {
       for (let i = 0; i < GOLD_VARIANT_COUNT; i++) {
@@ -814,7 +865,7 @@ function finishDrag(clientX, clientY) {
         }
       }
     }
-    const clearedLines = placeShape(shape, cellPos.row, cellPos.col, variant);
+    const clearedLines = placeShape(shape, baseRow, baseCol, variant);
     activePieces[pieceIndex] = null;
     renderPieces();
 
