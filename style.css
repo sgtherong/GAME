@@ -705,10 +705,15 @@ body {
   height: var(--tray-slot);
   min-width: var(--tray-slot);
   min-height: var(--tray-slot);
+  padding: 10px;
+  margin: -10px;
   display: flex;
   justify-content: center;
   align-items: center;
   flex-shrink: 0;
+  cursor: grab;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: none;
 }
 
 .piece-wrapper {

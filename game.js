@@ -90,15 +90,15 @@ const SHAPES = [
   ],
 ];
 
-/** 블록별 배치 난이도 가중치 (쉬운 블록 비율 더 높임) */
+/** 블록별 배치 난이도 가중치 (사각형 2×2, 3×3 비율 더 높임) */
 const SHAPE_WEIGHTS = [
   6, 6,       // 0,1: 두 칸 직선
   5, 5,       // 2,3: 세 칸 직선
   3, 3,       // 4,5: 네 칸 직선
   2, 2,       // 6,7: 다섯 칸 직선
-  5,          // 8: 2×2 정사각
+  8,          // 8: 2×2 정사각
   3, 3,       // 9,10: 3×2, 2×3
-  1,          // 11: 3×3
+  4,          // 11: 3×3 정사각
   2, 2, 2, 2, // 12–15: L자
   2, 2,       // 16,17: 계단
   2, 2, 2, 2, // 18–21: T자
@@ -483,11 +483,10 @@ function renderPieces() {
       }
     }
 
-    piece.addEventListener('mousedown', onPieceMouseDown);
-    piece.addEventListener('touchstart', onPieceTouchStart, { passive: false });
-
     piece.classList.add('piece-appear');
     wrapper.appendChild(piece);
+    wrapper.addEventListener('mousedown', onPieceMouseDown);
+    wrapper.addEventListener('touchstart', onPieceTouchStart, { passive: false });
     piecesEl.appendChild(wrapper);
   });
 }
@@ -878,11 +877,14 @@ function createGhostPiece(shape, startX, startY) {
 
 function onPieceMouseDown(e) {
   e.preventDefault();
-  const index = parseInt(e.currentTarget.dataset.index, 10);
+  const wrapper = e.currentTarget;
+  const piece = wrapper.querySelector('.piece');
+  if (!piece) return;
+  const index = parseInt(piece.dataset.index, 10);
   const shape = activePieces[index];
   if (!shape) return;
 
-  const rect = e.currentTarget.getBoundingClientRect();
+  const rect = piece.getBoundingClientRect();
   const offsetX = e.clientX - rect.left;
   const offsetY = e.clientY - rect.top;
   dragging = {
@@ -893,7 +895,7 @@ function onPieceMouseDown(e) {
     ghost: createGhostPiece(shape, e.clientX, e.clientY),
   };
 
-  e.currentTarget.classList.add('dragging');
+  piece.classList.add('dragging');
 
   window.addEventListener('mousemove', onMouseMove);
   window.addEventListener('mouseup', onMouseUp);
@@ -902,11 +904,14 @@ function onPieceMouseDown(e) {
 function onPieceTouchStart(e) {
   e.preventDefault();
   const touch = e.touches[0];
-  const index = parseInt(e.currentTarget.dataset.index, 10);
+  const wrapper = e.currentTarget;
+  const piece = wrapper.querySelector('.piece');
+  if (!piece) return;
+  const index = parseInt(piece.dataset.index, 10);
   const shape = activePieces[index];
   if (!shape) return;
 
-  const rect = e.currentTarget.getBoundingClientRect();
+  const rect = piece.getBoundingClientRect();
   const offsetX = touch.clientX - rect.left;
   const offsetY = touch.clientY - rect.top;
   dragging = {
@@ -917,7 +922,7 @@ function onPieceTouchStart(e) {
     ghost: createGhostPiece(shape, touch.clientX, touch.clientY),
   };
 
-  e.currentTarget.classList.add('dragging');
+  piece.classList.add('dragging');
 
   window.addEventListener('touchmove', onTouchMove, { passive: false });
   window.addEventListener('touchend', onTouchEnd);
