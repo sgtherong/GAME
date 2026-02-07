@@ -901,11 +901,11 @@ body {
 /* 모바일 한 화면에 맞춤 (100dvh, 컴팩트 레이아웃) */
 @media (max-width: 768px) {
   .app {
-    margin: 6px;
-    padding: 8px 10px 10px;
-    gap: 8px;
-    max-height: calc(100dvh - 12px);
-    max-height: calc(100vh - 12px);
+    margin: 4px;
+    padding: 6px 8px 8px;
+    gap: 6px;
+    max-height: calc(100dvh - 8px);
+    max-height: calc(100vh - 8px);
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -915,17 +915,17 @@ body {
   .header {
     flex-shrink: 0;
     min-height: 0;
-    gap: 6px;
+    gap: 4px;
   }
 
   .game-title {
-    font-size: 1.35rem;
-    letter-spacing: 0.08em;
+    font-size: 1.2rem;
+    letter-spacing: 0.06em;
   }
 
   .subtitle {
-    font-size: 0.7rem;
-    margin-top: 2px;
+    font-size: 0.65rem;
+    margin-top: 1px;
   }
 
   .score-panel {
@@ -935,27 +935,27 @@ body {
   }
 
   .score-box {
-    padding: 8px 10px;
-    min-width: 100px;
-    max-width: 180px;
+    padding: 6px 8px;
+    min-width: 88px;
+    max-width: 160px;
     overflow: visible;
   }
 
   .score-box .label {
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     overflow: visible;
   }
 
   .score-box .value {
-    font-size: 1.5rem;
+    font-size: 1.35rem;
     overflow: visible;
   }
 
   .last-gain {
-    min-height: 1.2em;
-    height: 1.2em;
-    line-height: 1.2em;
-    font-size: 0.7rem;
+    min-height: 1.1em;
+    height: 1.1em;
+    line-height: 1.1em;
+    font-size: 0.65rem;
     min-width: 0;
     max-width: 100%;
   }
@@ -971,7 +971,7 @@ body {
   .board-section {
     flex: 1;
     min-height: 0;
-    padding: 8px;
+    padding: 6px;
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -987,27 +987,28 @@ body {
   }
 
   .board {
-    width: min(72vmin, 100%);
+    width: min(58vmin, 100%);
     max-width: 100%;
     max-height: 100%;
-    padding: 4px;
+    padding: 2px;
+    border-radius: 8px;
   }
 
   .pieces-section {
     flex-shrink: 0;
-    padding: 8px 10px;
+    padding: 6px 8px;
   }
 
   .pieces-title {
-    margin: 0 0 6px;
-    font-size: 0.85rem;
+    margin: 0 0 4px;
+    font-size: 0.8rem;
   }
 
   .pieces-container {
-    --tray-cell: 26px;
-    --tray-slot: calc(var(--tray-cell) * 5 + 12px);
-    min-height: 80px;
-    gap: 12px;
+    --tray-cell: 22px;
+    --tray-slot: calc(var(--tray-cell) * 5 + 10px);
+    min-height: 68px;
+    gap: 10px;
     flex-wrap: nowrap;
     justify-content: center;
   }
@@ -1020,38 +1021,38 @@ body {
   }
 
   .pieces-container .piece-cell {
-    width: 26px;
-    height: 26px;
+    width: 22px;
+    height: 22px;
   }
 
   .pieces-container .piece-empty {
-    width: 26px;
-    height: 26px;
+    width: 22px;
+    height: 22px;
   }
 
   .pieces-container .piece {
-    padding: 4px;
+    padding: 3px;
   }
 
   .footer {
     flex-shrink: 0;
-    gap: 6px;
+    gap: 4px;
     flex-direction: column;
     align-items: stretch;
   }
 
   .footer-left {
-    gap: 6px;
+    gap: 4px;
   }
 
   .primary-btn,
   .secondary-btn {
-    padding: 8px 12px;
-    font-size: 0.8rem;
+    padding: 6px 10px;
+    font-size: 0.75rem;
   }
 
   .hint {
-    font-size: 0.7rem;
+    font-size: 0.65rem;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
