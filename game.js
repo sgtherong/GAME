@@ -90,6 +90,9 @@ const SHAPES = [
   ],
 ];
 
+/** 정사각형 블록 인덱스 (2×2, 3×3) — 배정 비율 높임 */
+const SQUARE_SHAPE_INDICES = [8, 11]; // SHAPES에서 2×2, 3×3
+
 let board = createEmptyBoard();
 /** 보드 각 칸의 금괴 색상 변형(0~4). null이면 빈 칸 */
 let cellVariants = Array.from({ length: BOARD_SIZE }, () => Array(BOARD_SIZE).fill(null));
@@ -405,7 +408,11 @@ function floatScorePopup(points) {
 }
 
 function createRandomPiece() {
-  const shape = SHAPES[Math.floor(Math.random() * SHAPES.length)];
+  const isSquare = Math.random() < 0.4;
+  const index = isSquare
+    ? SQUARE_SHAPE_INDICES[Math.floor(Math.random() * SQUARE_SHAPE_INDICES.length)]
+    : Math.floor(Math.random() * SHAPES.length);
+  const shape = SHAPES[index];
   return shape.map((row) => row.slice());
 }
 
@@ -589,6 +596,8 @@ function clearCompletedLines() {
 
   if (fullRows.length === 0 && fullCols.length === 0) return 0;
 
+  const isFullClear = wouldBoardBeEmptyAfterClear(fullRows, fullCols);
+
   // 보드 번쩍임
   if (boardWrap) {
     boardWrap.classList.remove('board-flash');
@@ -640,9 +649,68 @@ function clearCompletedLines() {
       }
     });
     renderBoard();
+    if (isFullClear) triggerFullClearCelebration();
   }, 260 + extraDelay);
 
   return fullRows.length + fullCols.length;
+}
+
+function wouldBoardBeEmptyAfterClear(fullRows, fullCols) {
+  for (let r = 0; r < BOARD_SIZE; r++) {
+    for (let c = 0; c < BOARD_SIZE; c++) {
+      if (board[r][c] === 1 && !fullRows.includes(r) && !fullCols.includes(c)) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+function triggerFullClearCelebration() {
+  spawnFullScreenFireworks();
+  if (boardWrap) {
+    boardWrap.classList.remove('board-rainbow');
+    void boardWrap.offsetWidth;
+    boardWrap.classList.add('board-rainbow');
+    setTimeout(() => boardWrap.classList.remove('board-rainbow'), 4000);
+  }
+}
+
+function spawnFullScreenFireworks() {
+  const overlay = document.createElement('div');
+  overlay.className = 'fireworks-overlay';
+  overlay.setAttribute('aria-hidden', 'true');
+
+  const burstCount = 10;
+  const particleCount = 14;
+  const colors = ['#fef08a', '#facc15', '#fb923c', '#f97316', '#fbbf24', '#fde047'];
+
+  for (let b = 0; b < burstCount; b++) {
+    const burst = document.createElement('div');
+    burst.className = 'firework-burst';
+    burst.style.left = (10 + Math.random() * 80) + '%';
+    burst.style.top = (10 + Math.random() * 80) + '%';
+    burst.style.animationDelay = (b * 100 + Math.random() * 50) + 'ms';
+
+    for (let i = 0; i < particleCount; i++) {
+      const angle = (Math.PI * 2 * i) / particleCount + Math.random() * 0.5;
+      const dist = 80 + Math.random() * 100;
+      const tx = Math.cos(angle) * dist;
+      const ty = Math.sin(angle) * dist;
+      const col = colors[b % colors.length];
+      const p = document.createElement('div');
+      p.className = 'firework-particle';
+      p.style.setProperty('--tx', tx + 'px');
+      p.style.setProperty('--ty', ty + 'px');
+      p.style.background = col;
+      p.style.color = col;
+      burst.appendChild(p);
+    }
+    overlay.appendChild(burst);
+  }
+
+  document.body.appendChild(overlay);
+  setTimeout(() => overlay.remove(), 2800);
 }
 
 function spawnClearParticles(fullRows, fullCols) {
@@ -1007,6 +1075,8 @@ function resetGame() {
   bestCombo = 0;
   updateScoreDisplays('');
   if (effectLayer) effectLayer.innerHTML = '';
+  if (boardWrap) boardWrap.classList.remove('board-rainbow');
+  document.querySelectorAll('.fireworks-overlay').forEach((el) => el.remove());
   renderBoard();
   if (piecesEl) piecesEl.innerHTML = '';
   generatePieces();

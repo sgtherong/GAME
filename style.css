@@ -317,6 +317,102 @@ body {
   80% { transform: translate(3px, -1px); }
 }
 
+/* 전체 클리어: 보드 알록달록 */
+.board-wrap.board-rainbow {
+  animation: boardRainbow 3s ease-in-out;
+}
+
+.board-wrap.board-rainbow .board {
+  background: linear-gradient(
+    135deg,
+    rgba(239, 68, 68, 0.35),
+    rgba(249, 115, 22, 0.35),
+    rgba(234, 179, 8, 0.4),
+    rgba(34, 197, 94, 0.35),
+    rgba(59, 130, 246, 0.35),
+    rgba(168, 85, 247, 0.35),
+    rgba(236, 72, 153, 0.35)
+  );
+  background-size: 400% 400%;
+  animation: rainbowShift 2s ease-in-out infinite;
+  box-shadow:
+    inset 0 0 24px rgba(255, 255, 255, 0.2),
+    0 0 32px rgba(251, 191, 36, 0.4);
+}
+
+@keyframes boardRainbow {
+  0% {
+    filter: brightness(1);
+    box-shadow: inset 0 0 0 0 rgba(254, 249, 195, 0);
+  }
+  20% {
+    filter: brightness(1.4);
+    box-shadow: inset 0 0 50px 6px rgba(254, 249, 195, 0.5);
+  }
+  100% {
+    filter: brightness(1);
+    box-shadow: inset 0 0 0 0 rgba(254, 249, 195, 0);
+  }
+}
+
+@keyframes rainbowShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* 전체 클리어: 화면 전체 폭죽 */
+.fireworks-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 199;
+  overflow: hidden;
+}
+
+.firework-burst {
+  position: absolute;
+  width: 0;
+  height: 0;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  animation: burstAppear 0.15s ease-out forwards;
+  contain: layout style;
+}
+
+.firework-particle {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1;
+  box-shadow: 0 0 10px currentColor, 0 0 20px currentColor;
+  animation: fireworkParticleOut 0.75s ease-out forwards;
+}
+
+@keyframes burstAppear {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fireworkParticleOut {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+  40% {
+    transform: translate(calc(-50% + var(--tx) * 0.4), calc(-50% + var(--ty) * 0.4)) scale(1.2);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(0);
+    opacity: 0;
+  }
+}
+
 .score-box.score-flash {
   animation: scoreFlash 0.22s ease-out;
 }
@@ -413,6 +509,9 @@ body {
 
 .board {
   --size: 8;
+  width: min(72vmin, 100%);
+  max-width: 100%;
+  margin: 0 auto;
   display: grid;
   grid-template-columns: repeat(var(--size), 1fr);
   gap: 0;
@@ -572,17 +671,17 @@ body {
   color: var(--muted);
 }
 
-/* 5×1 블럭 기준 슬롯 크기 (가로 5칸 × 셀 + 패딩) */
+/* 5×1 블럭 기준 슬롯 크기 (블럭 약 70% 크기) */
 .pieces-container {
-  --tray-cell: 32px;
-  --tray-slot: calc(var(--tray-cell) * 5 + 16px);
+  --tray-cell: 22px;
+  --tray-slot: calc(var(--tray-cell) * 5 + 12px);
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
   align-items: center;
   justify-content: center;
   gap: 20px;
-  min-height: 120px;
+  min-height: 100px;
   min-width: 0;
 }
 
@@ -655,15 +754,15 @@ body {
   overflow: hidden;
 }
 
-/* 블록 선택 창: 세로 배치, 블럭 크게 */
+/* 블록 선택 창: 70% 크기 */
 .pieces-container .piece-cell {
-  width: 32px;
-  height: 32px;
+  width: 22px;
+  height: 22px;
 }
 
 .pieces-container .piece-empty {
-  width: 32px;
-  height: 32px;
+  width: 22px;
+  height: 22px;
 }
 
 .pieces-container .piece {
@@ -987,7 +1086,7 @@ body {
   }
 
   .board {
-    width: min(58vmin, 100%);
+    width: min(70vmin, 100%);
     max-width: 100%;
     max-height: 100%;
     padding: 2px;
@@ -1005,9 +1104,9 @@ body {
   }
 
   .pieces-container {
-    --tray-cell: 22px;
-    --tray-slot: calc(var(--tray-cell) * 5 + 10px);
-    min-height: 68px;
+    --tray-cell: 15px;
+    --tray-slot: calc(var(--tray-cell) * 5 + 8px);
+    min-height: 56px;
     gap: 10px;
     flex-wrap: nowrap;
     justify-content: center;
@@ -1021,13 +1120,13 @@ body {
   }
 
   .pieces-container .piece-cell {
-    width: 22px;
-    height: 22px;
+    width: 15px;
+    height: 15px;
   }
 
   .pieces-container .piece-empty {
-    width: 22px;
-    height: 22px;
+    width: 15px;
+    height: 15px;
   }
 
   .pieces-container .piece {
