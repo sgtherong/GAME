@@ -418,12 +418,17 @@ function floatScorePopup(points) {
   setTimeout(() => pop.remove(), 800);
 }
 
-function createRandomPiece() {
-  const totalWeight = SHAPE_WEIGHTS.reduce((s, w) => s + w, 0);
+function createRandomPiece(useBoardAware = true) {
+  const weights = useBoardAware ? getBoardAwareWeights() : SHAPE_WEIGHTS;
+  const totalWeight = weights.reduce((s, w) => s + w, 0);
+  if (totalWeight <= 0) {
+    const index = Math.floor(Math.random() * SHAPES.length);
+    return SHAPES[index].map((row) => row.slice());
+  }
   let r = Math.random() * totalWeight;
   let index = 0;
-  for (let i = 0; i < SHAPE_WEIGHTS.length; i++) {
-    r -= SHAPE_WEIGHTS[i];
+  for (let i = 0; i < weights.length; i++) {
+    r -= weights[i];
     if (r <= 0) {
       index = i;
       break;
@@ -435,9 +440,9 @@ function createRandomPiece() {
 
 function generatePieces() {
   activePieces = [
-    createRandomPiece(),
-    createRandomPiece(),
-    createRandomPiece(),
+    createRandomPiece(true),
+    createRandomPiece(true),
+    createRandomPiece(true),
   ];
   activeVariants = activePieces.map(() => Math.floor(Math.random() * GOLD_VARIANT_COUNT));
   renderPieces();
@@ -523,6 +528,25 @@ function canPlace(shape, baseRow, baseCol) {
     }
   }
   return true;
+}
+
+/** 현재 보드에서 이 블럭을 놓을 수 있는 위치 개수 */
+function countValidPlacements(shape) {
+  let count = 0;
+  for (let r = 0; r < BOARD_SIZE; r++) {
+    for (let c = 0; c < BOARD_SIZE; c++) {
+      if (canPlace(shape, r, c)) count++;
+    }
+  }
+  return count;
+}
+
+/** 보드 상황에 맞는 블럭 가중치 (놓을 수 있는 위치가 많을수록 확률 상승) */
+function getBoardAwareWeights() {
+  return SHAPE_WEIGHTS.map((base, i) => {
+    const placements = countValidPlacements(SHAPES[i]);
+    return base * (1 + placements);
+  });
 }
 
 function placeShape(shape, baseRow, baseCol, variant) {
