@@ -46,7 +46,13 @@
       </main>
 
       <section class="pieces-section">
-        <h2 class="pieces-title">Pick a block</h2>
+        <div class="pieces-header">
+          <h2 class="pieces-title">Pick a block</h2>
+          <button id="itemBtn" class="item-inventory-btn" type="button" title="Items">
+            <span class="item-btn-icon">💎</span>
+            <span class="item-btn-label">Items</span>
+          </button>
+        </div>
         <div id="pieces" class="pieces-container"></div>
       </section>
 
@@ -66,7 +72,6 @@
         <div class="footer-left">
           <button id="resetBtn" class="primary-btn">New Game</button>
           <button id="hintBtn" class="secondary-btn">Hint</button>
-          <button id="itemBtn" class="secondary-btn" type="button" title="Items">💎 Items</button>
           <button id="bgmBtn" class="secondary-btn" type="button" title="Toggle BGM" aria-pressed="false">🎵 BGM</button>
         </div>
         <p class="hint">
@@ -86,30 +91,46 @@
 
     <div id="itemModal" class="modal hidden">
       <div class="modal-content">
-        <h2>Items</h2>
+        <h2>Item Inventory</h2>
         <div class="item-grid">
           <div class="item-card" data-item="midas">
             <div class="item-icon">👑</div>
             <div class="item-name">Midas Touch</div>
-            <div class="item-count" id="itemMidasCount">0</div>
+            <div class="item-description">Turn 3×3 center area to 24K Gold</div>
+            <div class="item-count-wrapper">
+              <span class="item-count-label">Count:</span>
+              <span class="item-count" id="itemMidasCount">0</span>
+            </div>
             <button class="item-use-btn" data-item="midas">Use</button>
           </div>
           <div class="item-card" data-item="launder">
             <div class="item-icon">💼</div>
             <div class="item-name">Money Launder</div>
-            <div class="item-count" id="itemLaunderCount">0</div>
+            <div class="item-description">Refresh all 3 active blocks</div>
+            <div class="item-count-wrapper">
+              <span class="item-count-label">Count:</span>
+              <span class="item-count" id="itemLaunderCount">0</span>
+            </div>
             <button class="item-use-btn" data-item="launder">Use</button>
           </div>
           <div class="item-card" data-item="hammer">
             <div class="item-icon">🔨</div>
             <div class="item-name">Golden Hammer</div>
-            <div class="item-count" id="itemHammerCount">0</div>
+            <div class="item-description">Clear 4×4 center area</div>
+            <div class="item-count-wrapper">
+              <span class="item-count-label">Count:</span>
+              <span class="item-count" id="itemHammerCount">0</span>
+            </div>
             <button class="item-use-btn" data-item="hammer">Use</button>
           </div>
           <div class="item-card" data-item="tax">
             <div class="item-icon">📋</div>
             <div class="item-name">Tax Break</div>
-            <div class="item-count" id="itemTaxCount">0</div>
+            <div class="item-description">Clear all blocks of most common type</div>
+            <div class="item-count-wrapper">
+              <span class="item-count-label">Count:</span>
+              <span class="item-count" id="itemTaxCount">0</span>
+            </div>
             <button class="item-use-btn" data-item="tax">Use</button>
           </div>
         </div>

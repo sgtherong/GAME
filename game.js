@@ -1,7 +1,9 @@
 const BOARD_SIZE = 8;
 const LOCAL_STORAGE_KEY = 'blockblast-best-score';
 
-/** 간단한 블록 패턴들 (1은 블록, 0은 빈 칸). 1칸 블록 제외 */
+/** 간단한 블록 패턴들 (1은 블록, 0은 빈 칸). 1칸 블록 제외
+ *  기획서 기준 총 26종 블록 형태
+ */
 const SHAPES = [
   // 두 칸 직선
   [[1, 1]],
@@ -88,21 +90,61 @@ const SHAPES = [
     [1, 1],
     [0, 1],
   ],
+  // 추가 Z/ㄱ 계열 (기획서 3×2 “ㅏ”, “z” 계열 보강)
+  [
+    [1, 1, 0],
+    [0, 1, 1],
+  ],
+  [
+    [0, 1, 1],
+    [1, 1, 0],
+  ],
+  [
+    [1, 0, 0],
+    [1, 1, 1],
+  ],
+  [
+    [0, 0, 1],
+    [1, 1, 1],
+  ],
 ];
 
-/** 블록별 배치 난이도 가중치 (사각형 2×2, 3×3 비율 더 높임) */
+/** 블록별 배치 난이도 가중치 (기본 가중치, 총 26종) */
 const SHAPE_WEIGHTS = [
-  6, 6,       // 0,1: 두 칸 직선
-  5, 5,       // 2,3: 세 칸 직선
-  3, 3,       // 4,5: 네 칸 직선
-  2, 2,       // 6,7: 다섯 칸 직선
-  8,          // 8: 2×2 정사각
-  3, 3,       // 9,10: 3×2, 2×3
-  4,          // 11: 3×3 정사각
-  2, 2, 2, 2, // 12–15: L자
-  2, 2,       // 16,17: 계단
-  2, 2, 2, 2, // 18–21: T자
+  6, 6,       // 0,1: 두 칸 직선 (단순)
+  5, 5,       // 2,3: 세 칸 직선 (단순)
+  3, 3,       // 4,5: 네 칸 직선 (큰)
+  2, 2,       // 6,7: 다섯 칸 직선 (큰)
+  8,          // 8: 2×2 정사각 (단순)
+  3, 3,       // 9,10: 3×2, 2×3 (큰)
+  4,          // 11: 3×3 정사각 (큰)
+  2, 2, 2, 2, // 12–15: L자 (복잡)
+  2, 2,       // 16,17: 계단 (복잡)
+  2, 2, 2, 2, // 18–21: T자 (복잡)
+  2, 2, 2, 2, // 22–25: 추가 Z/ㄱ 계열 (복잡)
 ];
+
+/** 블록 카테고리 분류 (기획서 기준) */
+const SHAPE_CATEGORIES = {
+  SIMPLE: [0, 1, 2, 3, 8],      // 단순 조각: 2칸, 3칸, 2×2
+  COMPLEX: [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25], // 복잡 조각: L, 계단, T, Z
+  LARGE: [4, 5, 6, 7, 9, 10, 11], // 큰 조각: 4칸, 5칸, 3×2, 2×3, 3×3
+};
+
+/** 점수 구간별 블록 카테고리 확률 (기획서 밸런스 테이블) */
+function getCategoryProbabilities(score) {
+  if (score < 1000) {
+    return { spaceFit: 0.5, simple: 0.4, complex: 0.05, large: 0.05 };
+  } else if (score < 10000) {
+    return { spaceFit: 0.3, simple: 0.4, complex: 0.2, large: 0.2 };
+  } else if (score < 50000) {
+    return { spaceFit: 0.25, simple: 0.35, complex: 0.25, large: 0.25 };
+  } else if (score < 100000) {
+    return { spaceFit: 0.2, simple: 0.3, complex: 0.3, large: 0.3 };
+  } else {
+    return { spaceFit: 0.15, simple: 0.25, complex: 0.35, large: 0.35 };
+  }
+}
 
 let board = createEmptyBoard();
 /** 보드 각 칸의 금괴 색상 변형(0~4). null이면 빈 칸 */
@@ -343,14 +385,29 @@ function saveItems() {
 }
 
 function updateItemDisplays() {
-  document.getElementById('itemMidasCount').textContent = items.midas;
-  document.getElementById('itemLaunderCount').textContent = items.launder;
-  document.getElementById('itemHammerCount').textContent = items.hammer;
-  document.getElementById('itemTaxCount').textContent = items.tax;
+  const midasCountEl = document.getElementById('itemMidasCount');
+  const launderCountEl = document.getElementById('itemLaunderCount');
+  const hammerCountEl = document.getElementById('itemHammerCount');
+  const taxCountEl = document.getElementById('itemTaxCount');
+  
+  if (midasCountEl) midasCountEl.textContent = items.midas;
+  if (launderCountEl) launderCountEl.textContent = items.launder;
+  if (hammerCountEl) hammerCountEl.textContent = items.hammer;
+  if (taxCountEl) taxCountEl.textContent = items.tax;
+  
   const useButtons = document.querySelectorAll('.item-use-btn');
   useButtons.forEach((btn) => {
     const itemType = btn.dataset.item;
-    btn.disabled = items[itemType] <= 0;
+    const hasItem = items[itemType] > 0;
+    btn.disabled = !hasItem;
+    const card = btn.closest('.item-card');
+    if (card) {
+      if (hasItem) {
+        card.classList.remove('item-disabled');
+      } else {
+        card.classList.add('item-disabled');
+      }
+    }
   });
 }
 
@@ -404,6 +461,24 @@ const GOLD_VARIANT_COUNT = METAL_COUNT; // 호환성
 /** 재질별 블록 1x1당 점수 (기획서 밸런스 테이블) */
 const METAL_SCORES = [10, 20, 30, 40, 50]; // Copper, Silver, Platinum, Rose Gold, 24K Gold
 const METAL_NAMES = ['Copper', 'Silver', 'Platinum', 'Rose Gold', '24K Gold'];
+
+/** 콤보 회차별 가중치 (기획서 밸런스 테이블) */
+function getComboMultiplier(comboCount) {
+  if (comboCount <= 1) return 1.0;
+  if (comboCount <= 5) return 1.0 + (comboCount - 1) * 0.02;  // 2~5: 10% (2%씩)
+  if (comboCount <= 10) return 1.08 + (comboCount - 5) * 0.014; // 6~10: 15% (1.4%씩)
+  if (comboCount <= 15) return 1.15 + (comboCount - 10) * 0.01; // 11~15: 20% (1%씩)
+  return 1.2 + (comboCount - 15) * 0.01; // 16+: 계속 증가
+}
+
+/** 클리어 보드 보너스 비율 (기획서 밸런스 테이블) */
+function getClearBoardBonusRatio(score) {
+  if (score < 5000) return 1.0;   // 100%
+  if (score < 10000) return 0.5;  // 50%
+  if (score < 50000) return 0.3;  // 30%
+  if (score < 100000) return 0.2; // 20%
+  return 0.15; // 15%
+}
 
 function renderBoard() {
   boardEl.querySelectorAll('.cell').forEach((cell) => {
@@ -459,11 +534,12 @@ function startComboTimer() {
   }, 1000);
 }
 
-/** 피버 게이지 업데이트 */
-function updateFeverGauge(comboGain) {
+/** 피버 게이지 업데이트 (콤보 횟수로 축적) */
+function updateFeverGauge(comboCount) {
   if (feverModeActive) return;
   const requirement = getFeverRequirement(score);
-  feverGauge = Math.min(100, feverGauge + (comboGain / requirement) * 100);
+  const comboPoints = comboCount * 100;
+  feverGauge = Math.min(100, feverGauge + (comboPoints / requirement) * 100);
   if (feverGaugeEl) {
     feverGaugeEl.style.width = feverGauge + '%';
   }
@@ -721,12 +797,34 @@ function countValidPlacements(shape) {
   return count;
 }
 
-/** 보드 상황에 맞는 블럭 가중치: 놓을 수 없으면 0, 놓을 수 있으면 보드에 맞을수록 확률 up */
+/** 보드 상황에 맞는 블럭 가중치: 점수 구간별 카테고리 확률 + 공간 맞춤 적용 */
 function getBoardAwareWeights() {
+  const probs = getCategoryProbabilities(score);
+  const baseWeights = SHAPE_WEIGHTS.slice();
+  const categoryWeights = { simple: 0, complex: 0, large: 0 };
+  
+  SHAPE_CATEGORIES.SIMPLE.forEach((i) => { categoryWeights.simple += baseWeights[i]; });
+  SHAPE_CATEGORIES.COMPLEX.forEach((i) => { categoryWeights.complex += baseWeights[i]; });
+  SHAPE_CATEGORIES.LARGE.forEach((i) => { categoryWeights.large += baseWeights[i]; });
+  
+  const totalCategoryWeight = categoryWeights.simple + categoryWeights.complex + categoryWeights.large;
+  const spaceFitMultiplier = probs.spaceFit / (1 - probs.spaceFit);
+  
   return SHAPE_WEIGHTS.map((base, i) => {
     const placements = countValidPlacements(SHAPES[i]);
     if (placements === 0) return 0;
-    return base * (2 + placements);
+    
+    let categoryMultiplier = 1;
+    if (SHAPE_CATEGORIES.SIMPLE.includes(i)) {
+      categoryMultiplier = (probs.simple * totalCategoryWeight) / categoryWeights.simple;
+    } else if (SHAPE_CATEGORIES.COMPLEX.includes(i)) {
+      categoryMultiplier = (probs.complex * totalCategoryWeight) / categoryWeights.complex;
+    } else if (SHAPE_CATEGORIES.LARGE.includes(i)) {
+      categoryMultiplier = (probs.large * totalCategoryWeight) / categoryWeights.large;
+    }
+    
+    const spaceFitBoost = placements > 0 ? (1 + spaceFitMultiplier * Math.min(placements / 10, 1)) : 1;
+    return base * categoryMultiplier * spaceFitBoost * (1 + placements * 0.1);
   });
 }
 
@@ -759,23 +857,38 @@ function placeShape(shape, baseRow, baseCol, variant) {
   const cleared = typeof clearResult === 'number' ? clearResult : clearResult.count;
   const fullRows = clearResult.fullRows || [];
   const fullCols = clearResult.fullCols || [];
+  const clearedBlockScore = clearResult.clearedBlockScore || 0;
+  const isFullClear = clearResult.isFullClear || false;
   let gainText = `+${placedCount} ${METAL_NAMES[v]} block${placedCount !== 1 ? 's' : ''}`;
-  let lineScore = 0;
   let totalGain = blockScore;
 
   if (cleared > 0) {
     currentCombo++;
     totalLines += cleared;
     startComboTimer();
-    const clearedBlockCount = cleared * BOARD_SIZE;
-    lineScore = clearedBlockCount * 20;
-    const comboMultiplier = 1 + (currentCombo - 1) * 0.1;
-    const comboBonus = Math.floor((blockScore + lineScore) * (comboMultiplier - 1));
-    const finalScore = Math.floor((blockScore + lineScore) * comboMultiplier);
+    
+    const baseScore = blockScore + clearedBlockScore;
+    const comboMultiplier = getComboMultiplier(currentCombo);
+    let finalScore = Math.floor(baseScore * comboMultiplier);
+    
+    if (isFullClear) {
+      const clearBoardRatio = getClearBoardBonusRatio(score);
+      const clearBoardBonus = Math.floor(score * clearBoardRatio);
+      finalScore += clearBoardBonus;
+      if (effectLayer) {
+        const pop = document.createElement('div');
+        pop.className = 'clear-board-popup';
+        pop.textContent = 'CLEAR BOARD!';
+        effectLayer.appendChild(pop);
+        requestAnimationFrame(() => pop.classList.add('clear-board-popup-visible'));
+        setTimeout(() => pop.remove(), 2000);
+      }
+    }
+    
     score += finalScore;
     totalGain = finalScore;
     if (currentCombo > bestCombo) bestCombo = currentCombo;
-    updateFeverGauge(finalScore);
+    updateFeverGauge(currentCombo);
     playLineClearSound(cleared, currentCombo);
     screenShake();
     scoreFlash();
@@ -785,6 +898,9 @@ function placeShape(shape, baseRow, baseCol, variant) {
     gainText = currentCombo >= 2
       ? `+${finalScore.toLocaleString()} pts (${cleared} line(s) · combo ${currentCombo}x!)`
       : `+${finalScore.toLocaleString()} pts (${cleared} line clear!)`;
+    if (isFullClear) {
+      gainText += ` + Clear Board Bonus!`;
+    }
   } else {
     if (comboTimeLeft <= 0) {
       currentCombo = 0;
@@ -847,7 +963,38 @@ function clearCompletedLines() {
   if (fullRows.length === 0 && fullCols.length === 0) return 0;
 
   const isFullClear = wouldBoardBeEmptyAfterClear(fullRows, fullCols);
-  const returnValue = { count: fullRows.length + fullCols.length, fullRows, fullCols };
+  
+  // 지워질 블록들의 재질별 점수 계산
+  const clearedCells = new Set();
+  let clearedBlockScore = 0;
+  fullRows.forEach((r) => {
+    for (let c = 0; c < BOARD_SIZE; c++) {
+      const key = `${r},${c}`;
+      if (!clearedCells.has(key)) {
+        clearedCells.add(key);
+        const variant = cellVariants[r][c] ?? 0;
+        clearedBlockScore += METAL_SCORES[variant];
+      }
+    }
+  });
+  fullCols.forEach((c) => {
+    for (let r = 0; r < BOARD_SIZE; r++) {
+      const key = `${r},${c}`;
+      if (!clearedCells.has(key)) {
+        clearedCells.add(key);
+        const variant = cellVariants[r][c] ?? 0;
+        clearedBlockScore += METAL_SCORES[variant];
+      }
+    }
+  });
+  
+  const returnValue = { 
+    count: fullRows.length + fullCols.length, 
+    fullRows, 
+    fullCols,
+    clearedBlockScore,
+    isFullClear
+  };
 
   // 보드 번쩍임
   if (boardWrap) {
@@ -900,7 +1047,7 @@ function clearCompletedLines() {
       }
     });
     renderBoard();
-    if (isFullClear) triggerFullClearCelebration();
+    if (returnValue.isFullClear) triggerFullClearCelebration();
   }, 260 + extraDelay);
 
   return returnValue;
@@ -1387,19 +1534,31 @@ function useMidasTouch() {
   if (items.midas <= 0) return false;
   const centerRow = Math.floor(BOARD_SIZE / 2);
   const centerCol = Math.floor(BOARD_SIZE / 2);
-  let clearedCount = 0;
-  let clearedScore = 0;
+  const targetCells = [];
   for (let r = centerRow - 1; r <= centerRow + 1; r++) {
     for (let c = centerCol - 1; c <= centerCol + 1; c++) {
       if (r >= 0 && r < BOARD_SIZE && c >= 0 && c < BOARD_SIZE && board[r][c] === 1) {
-        board[r][c] = 0;
-        cellVariants[r][c] = null;
-        clearedCount++;
-        clearedScore += METAL_SCORES[METAL_TYPES.GOLD_24K];
+        targetCells.push({ r, c });
       }
     }
   }
-  if (clearedCount > 0) {
+  if (targetCells.length === 0) {
+    items.midas--;
+    saveItems();
+    updateItemDisplays();
+    return true;
+  }
+  targetCells.forEach(({ r, c }) => {
+    cellVariants[r][c] = METAL_TYPES.GOLD_24K;
+  });
+  renderBoard();
+  setTimeout(() => {
+    let clearedScore = 0;
+    targetCells.forEach(({ r, c }) => {
+      clearedScore += METAL_SCORES[METAL_TYPES.GOLD_24K];
+      board[r][c] = 0;
+      cellVariants[r][c] = null;
+    });
     score += clearedScore;
     renderBoard();
     screenShake();
@@ -1409,9 +1568,9 @@ function useMidasTouch() {
       bestScore = score;
       saveBestScore();
     }
-    updateScoreDisplays(`Midas Touch cleared ${clearedCount} blocks!`);
+    updateScoreDisplays(`Midas Touch: ${targetCells.length} blocks turned to gold!`);
     updateRank();
-  }
+  }, 300);
   items.midas--;
   saveItems();
   updateItemDisplays();
@@ -1434,8 +1593,8 @@ function useGoldenHammer() {
   const centerCol = Math.floor(BOARD_SIZE / 2);
   let clearedCount = 0;
   let clearedScore = 0;
-  for (let r = centerRow - 2; r <= centerRow + 1; r++) {
-    for (let c = centerCol - 2; c <= centerCol + 1; c++) {
+  for (let r = centerRow - 1; r <= centerRow + 2; r++) {
+    for (let c = centerCol - 1; c <= centerCol + 2; c++) {
       if (r >= 0 && r < BOARD_SIZE && c >= 0 && c < BOARD_SIZE && board[r][c] === 1) {
         const variant = cellVariants[r][c] ?? 0;
         board[r][c] = 0;
@@ -1506,8 +1665,17 @@ function useTaxBreak() {
   return true;
 }
 
+const ITEM_NAMES = {
+  midas: 'Midas Touch',
+  launder: 'Money Launder',
+  hammer: 'Golden Hammer',
+  tax: 'Tax Break',
+};
+
 function handleItemUse(itemType) {
-  if (!confirm(`Use ${itemType}?`)) return;
+  if (items[itemType] <= 0) return;
+  const itemName = ITEM_NAMES[itemType] || itemType;
+  if (!confirm(`Use ${itemName}?`)) return;
   let used = false;
   switch (itemType) {
     case 'midas':
@@ -1523,9 +1691,9 @@ function handleItemUse(itemType) {
       used = useTaxBreak();
       break;
   }
-  if (used && itemModal) {
-    itemModal.classList.add('hidden');
-    itemModal.classList.remove('modal-visible');
+  if (used) {
+    updateItemDisplays();
+    closeItemModal();
   }
 }
 
@@ -1534,28 +1702,58 @@ restartBtn.addEventListener('click', resetGame);
 if (hintBtn) {
   hintBtn.addEventListener('click', showHint);
 }
+function openItemModal() {
+  if (!itemModal) return;
+  itemModal.classList.remove('hidden');
+  updateItemDisplays();
+  requestAnimationFrame(() => {
+    itemModal.classList.add('modal-visible');
+  });
+}
+
+function closeItemModal() {
+  if (!itemModal) return;
+  itemModal.classList.add('hidden');
+  itemModal.classList.remove('modal-visible');
+}
+
 if (itemBtn) {
-  itemBtn.addEventListener('click', () => {
-    if (!itemModal) return;
-    itemModal.classList.remove('hidden');
-    requestAnimationFrame(() => {
-      itemModal.classList.add('modal-visible');
+  itemBtn.addEventListener('click', openItemModal);
+}
+if (closeItemModal) {
+  closeItemModal.addEventListener('click', closeItemModal);
+}
+
+// 모달 외부 클릭 시 닫기
+if (itemModal) {
+  itemModal.addEventListener('click', (e) => {
+    if (e.target === itemModal) {
+      closeItemModal();
+    }
+  });
+}
+
+// ESC 키로 모달 닫기
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && itemModal && !itemModal.classList.contains('hidden')) {
+    closeItemModal();
+  }
+});
+
+// 아이템 사용 버튼 이벤트 (동적으로 생성되는 요소 대응)
+function setupItemButtons() {
+  document.querySelectorAll('.item-use-btn').forEach((btn) => {
+    // 기존 리스너 제거 후 재등록
+    const newBtn = btn.cloneNode(true);
+    btn.parentNode.replaceChild(newBtn, btn);
+    newBtn.addEventListener('click', (e) => {
+      const itemType = e.currentTarget.dataset.item;
+      handleItemUse(itemType);
     });
   });
 }
-if (closeItemModal) {
-  closeItemModal.addEventListener('click', () => {
-    if (!itemModal) return;
-    itemModal.classList.add('hidden');
-    itemModal.classList.remove('modal-visible');
-  });
-}
-document.querySelectorAll('.item-use-btn').forEach((btn) => {
-  btn.addEventListener('click', (e) => {
-    const itemType = e.currentTarget.dataset.item;
-    handleItemUse(itemType);
-  });
-});
+
+setupItemButtons();
 
 // 사용자 제스처 시 오디오 잠금 해제 (브라우저 정책)
 function unlockAudio() {
