@@ -1231,6 +1231,27 @@ body {
   transform: scale(0.9);
   opacity: 0;
   transition: transform 0.28s ease-out, opacity 0.28s ease-out;
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+  overflow: hidden;
+}
+
+.modal-content > h2 {
+  flex-shrink: 0;
+}
+
+.modal-content > .item-grid {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  margin: 16px -10px;
+  padding: 0 10px;
+}
+
+.modal-content > .secondary-btn {
+  flex-shrink: 0;
+  margin-top: 12px;
 }
 
 .modal.modal-visible .modal-content {
@@ -1520,7 +1541,24 @@ body {
 
   .modal-content {
     max-width: 90vw;
-    padding: 20px 16px;
+    padding: 16px 12px;
+    max-height: 85vh;
+  }
+
+  .modal-content > h2 {
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+  }
+
+  .modal-content > .item-grid {
+    margin: 12px -6px;
+    padding: 0 6px;
+    max-height: calc(85vh - 120px);
+  }
+
+  .modal-content > .secondary-btn {
+    margin-top: 8px;
+    padding: 8px 14px;
   }
   .app {
     margin: 4px;
