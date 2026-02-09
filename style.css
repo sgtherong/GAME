@@ -217,7 +217,7 @@ body {
 
 .fever-section {
   border-radius: var(--radius-lg);
-  padding: 12px 18px;
+  padding: 8px 18px;
   border: 2px solid rgba(74, 53, 32, 0.85);
   background: linear-gradient(180deg, rgba(42, 26, 14, 0.2) 0%, rgba(13, 8, 5, 0.28) 100%);
   box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.15);
@@ -227,17 +227,17 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .fever-label {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   color: var(--muted);
   font-weight: 600;
 }
 
 .combo-timer {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   color: var(--gold);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
@@ -245,12 +245,12 @@ body {
 
 .fever-gauge-container {
   width: 100%;
-  height: 24px;
+  height: 16px;
   background: rgba(0, 0, 0, 0.3);
-  border-radius: 12px;
+  border-radius: 8px;
   overflow: hidden;
   border: 1px solid rgba(74, 53, 32, 0.6);
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
 .fever-gauge {
@@ -1539,31 +1539,48 @@ body {
     font-size: 0.8rem;
   }
 
+  .modal {
+    align-items: flex-start;
+    padding: 10px;
+    overflow-y: auto;
+  }
+
   .modal-content {
     max-width: 90vw;
-    padding: 16px 12px;
-    max-height: 85vh;
+    padding: 16px 12px 12px;
+    max-height: calc(100vh - 20px);
+    margin: auto 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
   }
 
   .modal-content > h2 {
     font-size: 1.1rem;
     margin-bottom: 8px;
+    flex-shrink: 0;
   }
 
   .modal-content > .item-grid {
-    margin: 12px -6px;
+    margin: 8px -6px;
     padding: 0 6px;
-    max-height: calc(85vh - 120px);
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
   }
 
   .modal-content > .secondary-btn {
-    margin-top: 8px;
-    padding: 8px 14px;
+    margin-top: 12px;
+    padding: 10px 16px;
+    flex-shrink: 0;
+    width: 100%;
   }
   .app {
     margin: 4px;
     padding: 6px 8px 8px;
-    gap: 6px;
+    gap: 4px;
     max-height: calc(100dvh - 8px);
     max-height: calc(100vh - 8px);
     overflow: hidden;
@@ -1579,6 +1596,8 @@ body {
     display: flex;
     flex-direction: column;
     align-items: stretch;
+    flex-wrap: wrap;
+    justify-content: center;
   }
 
   .title-group {
@@ -1586,27 +1605,30 @@ body {
     flex-shrink: 0;
     text-align: center;
     margin-bottom: 0;
+    width: 100%;
   }
 
+  /* 랭크와 스코어를 한 줄에 나란히 배치 */
   .leaderboard-info {
     order: 2;
-    align-self: center;
     flex-shrink: 0;
+    align-self: center;
+    margin-right: 6px;
   }
 
   .rank-badge {
-    padding: 4px 8px;
-    gap: 1px;
+    padding: 2px 5px;
+    gap: 0;
   }
 
   .rank-label {
-    font-size: 0.6rem;
-    line-height: 1.1;
+    font-size: 0.5rem;
+    line-height: 1;
   }
 
   .rank-value {
-    font-size: 0.95rem;
-    line-height: 1.2;
+    font-size: 0.75rem;
+    line-height: 1;
   }
 
   .game-title {
@@ -1624,44 +1646,32 @@ body {
 
   .score-panel {
     order: 2;
+    flex-shrink: 0;
     align-self: center;
     gap: 4px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
     justify-content: center;
-    flex-shrink: 0;
-  }
-
-  /* 랭크와 스코어를 나란히 배치 */
-  .leaderboard-info,
-  .score-panel {
-    display: inline-flex;
-  }
-
-  .header {
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-
-  .leaderboard-info {
-    margin-right: 8px;
   }
 
   .score-box {
-    padding: 4px 6px;
-    min-width: 70px;
-    max-width: 90px;
-    gap: 2px;
+    padding: 3px 5px;
+    min-width: 60px;
+    max-width: 75px;
+    gap: 1px;
     overflow: visible;
   }
 
   .score-box .label {
-    font-size: 0.7rem;
-    line-height: 1.1;
+    font-size: 0.65rem;
+    line-height: 1;
     overflow: visible;
   }
 
   .score-box .value {
-    font-size: 1.1rem;
-    line-height: 1.2;
+    font-size: 0.95rem;
+    line-height: 1.1;
     overflow: visible;
   }
 
@@ -1809,6 +1819,28 @@ body {
     max-width: 100%;
     padding: 8px;
     font-size: 0.7rem;
+  }
+
+  .fever-section {
+    padding: 4px 10px;
+    flex-shrink: 0;
+  }
+
+  .fever-header {
+    margin-bottom: 3px;
+  }
+
+  .fever-label {
+    font-size: 0.7rem;
+  }
+
+  .combo-timer {
+    font-size: 0.65rem;
+  }
+
+  .fever-gauge-container {
+    height: 10px;
+    border-radius: 5px;
   }
 }
 
