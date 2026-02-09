@@ -190,7 +190,7 @@ const feverGaugeEl = document.getElementById('feverGaugeFill');
 const comboTimerEl = document.getElementById('comboTimer');
 const itemBtn = document.getElementById('itemBtn');
 const itemModal = document.getElementById('itemModal');
-const closeItemModal = document.getElementById('closeItemModal');
+const closeItemModalBtn = document.getElementById('closeItemModal');
 const playerRankEl = document.getElementById('playerRank');
 
 /** 아이템 보유 개수 */
@@ -1720,8 +1720,8 @@ function closeItemModal() {
 if (itemBtn) {
   itemBtn.addEventListener('click', openItemModal);
 }
-if (closeItemModal) {
-  closeItemModal.addEventListener('click', closeItemModal);
+if (closeItemModalBtn) {
+  closeItemModalBtn.addEventListener('click', closeItemModal);
 }
 
 // 모달 외부 클릭 시 닫기
@@ -1781,10 +1781,24 @@ if (bgmBtn) {
   bgmBtn.addEventListener('click', toggleBGM);
 }
 
-// 초기화
-loadBestScore();
-loadItems();
-setupBoard();
-updateScoreDisplays('');
-updateRank();
-generatePieces();
+// 초기화 - DOM이 로드된 후 실행
+function initGame() {
+  if (!boardEl || !piecesEl) {
+    console.error('DOM elements not found');
+    return;
+  }
+  loadBestScore();
+  loadItems();
+  setupBoard();
+  updateScoreDisplays('');
+  updateRank();
+  generatePieces();
+}
+
+// DOM이 준비되면 초기화
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initGame);
+} else {
+  // DOM이 이미 로드된 경우 즉시 실행
+  initGame();
+}
