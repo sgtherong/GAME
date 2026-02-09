@@ -118,6 +118,15 @@ let activePieces = [];
 let activeVariants = [];
 let dragging = null; // {pieceIndex, shape, offsetX, offsetY}
 let hintTimeoutId = null;
+/** 피버 게이지 (0~100) */
+let feverGauge = 0;
+/** 피버 모드 활성화 여부 */
+let feverModeActive = false;
+/** 피버 모드 종료 타이머 */
+let feverModeTimer = null;
+/** 콤보 타이머 (10초 카운트다운) */
+let comboTimer = null;
+let comboTimeLeft = 10;
 
 const boardEl = document.getElementById('board');
 const piecesEl = document.getElementById('pieces');
@@ -135,6 +144,21 @@ const gameOverModal = document.getElementById('gameOverModal');
 const restartBtn = document.getElementById('restartBtn');
 const finalScoreEl = document.getElementById('finalScore');
 const particleContainer = document.getElementById('particleContainer');
+const feverGaugeEl = document.getElementById('feverGaugeFill');
+const comboTimerEl = document.getElementById('comboTimer');
+const itemBtn = document.getElementById('itemBtn');
+const itemModal = document.getElementById('itemModal');
+const closeItemModal = document.getElementById('closeItemModal');
+const playerRankEl = document.getElementById('playerRank');
+
+/** 아이템 보유 개수 */
+const ITEM_STORAGE_KEY = 'goldenblast-items';
+let items = {
+  midas: 0,
+  launder: 0,
+  hammer: 0,
+  tax: 0,
+};
 
 /* ----- 사운드 (Web Audio API로 생성) ----- */
 let audioCtx = null;
@@ -294,6 +318,59 @@ function saveBestScore() {
   }
 }
 
+function loadItems() {
+  try {
+    const stored = localStorage.getItem(ITEM_STORAGE_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      items = { ...items, ...parsed };
+    } else {
+      items = { midas: 1, launder: 2, hammer: 1, tax: 1 };
+      saveItems();
+    }
+  } catch (e) {
+    items = { midas: 1, launder: 2, hammer: 1, tax: 1 };
+  }
+  updateItemDisplays();
+}
+
+function saveItems() {
+  try {
+    localStorage.setItem(ITEM_STORAGE_KEY, JSON.stringify(items));
+  } catch (e) {
+    // 무시
+  }
+}
+
+function updateItemDisplays() {
+  document.getElementById('itemMidasCount').textContent = items.midas;
+  document.getElementById('itemLaunderCount').textContent = items.launder;
+  document.getElementById('itemHammerCount').textContent = items.hammer;
+  document.getElementById('itemTaxCount').textContent = items.tax;
+  const useButtons = document.querySelectorAll('.item-use-btn');
+  useButtons.forEach((btn) => {
+    const itemType = btn.dataset.item;
+    btn.disabled = items[itemType] <= 0;
+  });
+}
+
+function updateRank() {
+  if (!playerRankEl) return;
+  const rank = calculateRank(score);
+  playerRankEl.textContent = rank;
+}
+
+function calculateRank(score) {
+  if (score < 1000) return 'F';
+  if (score < 5000) return 'E';
+  if (score < 10000) return 'D';
+  if (score < 50000) return 'C';
+  if (score < 100000) return 'B';
+  if (score < 500000) return 'A';
+  if (score < 1000000) return 'S';
+  return 'SS';
+}
+
 function setupBoard() {
   boardEl.innerHTML = '';
   for (let r = 0; r < BOARD_SIZE; r++) {
@@ -313,7 +390,20 @@ function setupBoard() {
   renderBoard();
 }
 
-const GOLD_VARIANT_COUNT = 5;
+/** 블록 재질 종류 (기획서: 5종 귀금속) */
+const METAL_TYPES = {
+  COPPER: 0,      // 구리 - 10p
+  SILVER: 1,      // 은 - 20p
+  PLATINUM: 2,    // 플래티넘 - 30p
+  ROSE_GOLD: 3,   // 로즈골드 - 40p
+  GOLD_24K: 4,    // 24K 순금 - 50p
+};
+const METAL_COUNT = 5;
+const GOLD_VARIANT_COUNT = METAL_COUNT; // 호환성
+
+/** 재질별 블록 1x1당 점수 (기획서 밸런스 테이블) */
+const METAL_SCORES = [10, 20, 30, 40, 50]; // Copper, Silver, Platinum, Rose Gold, 24K Gold
+const METAL_NAMES = ['Copper', 'Silver', 'Platinum', 'Rose Gold', '24K Gold'];
 
 function renderBoard() {
   boardEl.querySelectorAll('.cell').forEach((cell) => {
@@ -322,8 +412,13 @@ function renderBoard() {
     for (let i = 0; i < GOLD_VARIANT_COUNT; i++) cell.classList.remove('gold-variant-' + i);
     cell.classList.remove('preview-okay', 'preview-bad');
     if (board[r][c] === 1) {
-      const v = cellVariants[r][c];
-      const variant = v != null ? v : (r + c) % GOLD_VARIANT_COUNT;
+      let variant;
+      if (feverModeActive) {
+        variant = METAL_TYPES.GOLD_24K;
+      } else {
+        const v = cellVariants[r][c];
+        variant = v != null ? v : (r + c) % GOLD_VARIANT_COUNT;
+      }
       cell.classList.add('filled', 'gold-variant-' + variant);
     } else {
       cell.classList.remove('filled');
@@ -331,9 +426,92 @@ function renderBoard() {
   });
 }
 
+function formatScore(amount) {
+  return '$' + amount.toLocaleString('en-US');
+}
+
+/** 점수 구간별 피버 발동 필요 콤보 수 (기획서 밸런스 테이블) */
+function getFeverRequirement(score) {
+  if (score < 5000) return 1000;
+  if (score < 10000) return 2000;
+  if (score < 50000) return 3000;
+  if (score < 100000) return 4000;
+  return 5000;
+}
+
+/** 콤보 타이머 시작/리셋 (10초) */
+function startComboTimer() {
+  if (comboTimer) clearInterval(comboTimer);
+  comboTimeLeft = 10;
+  if (comboTimerEl) comboTimerEl.textContent = '10s';
+  comboTimer = setInterval(() => {
+    comboTimeLeft--;
+    if (comboTimerEl) comboTimerEl.textContent = comboTimeLeft + 's';
+    if (comboTimeLeft <= 0) {
+      clearInterval(comboTimer);
+      comboTimer = null;
+      if (currentCombo > 0) {
+        currentCombo = 0;
+        updateScoreDisplays('');
+      }
+      if (comboTimerEl) comboTimerEl.textContent = '';
+    }
+  }, 1000);
+}
+
+/** 피버 게이지 업데이트 */
+function updateFeverGauge(comboGain) {
+  if (feverModeActive) return;
+  const requirement = getFeverRequirement(score);
+  feverGauge = Math.min(100, feverGauge + (comboGain / requirement) * 100);
+  if (feverGaugeEl) {
+    feverGaugeEl.style.width = feverGauge + '%';
+  }
+  if (feverGauge >= 100) {
+    activateFeverMode();
+  }
+}
+
+/** 피버 모드 활성화 (골든 아워) */
+function activateFeverMode() {
+  feverModeActive = true;
+  feverGauge = 100;
+  if (feverGaugeEl) feverGaugeEl.style.width = '100%';
+  if (boardWrap) boardWrap.classList.add('fever-active');
+  currentCombo = 0;
+  if (comboTimer) {
+    clearInterval(comboTimer);
+    comboTimer = null;
+  }
+  if (comboTimerEl) comboTimerEl.textContent = '';
+  if (effectLayer) {
+    const pop = document.createElement('div');
+    pop.className = 'fever-popup';
+    pop.textContent = 'GOLDEN HOUR!';
+    effectLayer.appendChild(pop);
+    requestAnimationFrame(() => pop.classList.add('fever-popup-visible'));
+    setTimeout(() => pop.remove(), 2000);
+  }
+  feverModeTimer = setTimeout(() => {
+    deactivateFeverMode();
+  }, 10000);
+}
+
+/** 피버 모드 비활성화 */
+function deactivateFeverMode() {
+  feverModeActive = false;
+  feverGauge = 0;
+  if (feverGaugeEl) feverGaugeEl.style.width = '0%';
+  if (boardWrap) boardWrap.classList.remove('fever-active');
+  if (feverModeTimer) {
+    clearTimeout(feverModeTimer);
+    feverModeTimer = null;
+  }
+}
+
 function updateScoreDisplays(extraText = '') {
-  scoreEl.textContent = score;
-  if (bestScoreEl) bestScoreEl.textContent = bestScore;
+  scoreEl.textContent = formatScore(score);
+  if (bestScoreEl) bestScoreEl.textContent = formatScore(bestScore);
   if (linesEl) linesEl.textContent = totalLines;
   if (currentComboEl) {
     currentComboEl.textContent = currentCombo;
@@ -444,7 +622,10 @@ function generatePieces() {
     createRandomPiece(true),
     createRandomPiece(true),
   ];
-  activeVariants = activePieces.map(() => Math.floor(Math.random() * GOLD_VARIANT_COUNT));
+  activeVariants = activePieces.map(() => {
+    if (feverModeActive) return METAL_TYPES.GOLD_24K;
+    return Math.floor(Math.random() * GOLD_VARIANT_COUNT);
+  });
   renderPieces();
 }
 
@@ -573,22 +754,28 @@ function placeShape(shape, baseRow, baseCol, variant) {
 
   playPlaceSound();
 
+  const blockScore = placedCount * METAL_SCORES[v];
   const clearResult = clearCompletedLines();
   const cleared = typeof clearResult === 'number' ? clearResult : clearResult.count;
   const fullRows = clearResult.fullRows || [];
   const fullCols = clearResult.fullCols || [];
-  let gainText = `+${placedCount} block${placedCount !== 1 ? 's' : ''}`;
+  let gainText = `+${placedCount} ${METAL_NAMES[v]} block${placedCount !== 1 ? 's' : ''}`;
   let lineScore = 0;
-  let totalGain = placedCount;
+  let totalGain = blockScore;
 
   if (cleared > 0) {
     currentCombo++;
     totalLines += cleared;
-    lineScore = cleared * 10 + (cleared - 1) * 5;
-    const comboBonus = (currentCombo - 1) * 12;
-    score += placedCount + lineScore + comboBonus;
-    totalGain += lineScore + comboBonus;
+    startComboTimer();
+    const clearedBlockCount = cleared * BOARD_SIZE;
+    lineScore = clearedBlockCount * 20;
+    const comboMultiplier = 1 + (currentCombo - 1) * 0.1;
+    const comboBonus = Math.floor((blockScore + lineScore) * (comboMultiplier - 1));
+    const finalScore = Math.floor((blockScore + lineScore) * comboMultiplier);
+    score += finalScore;
+    totalGain = finalScore;
     if (currentCombo > bestCombo) bestCombo = currentCombo;
+    updateFeverGauge(finalScore);
     playLineClearSound(cleared, currentCombo);
     screenShake();
     scoreFlash();
@@ -596,13 +783,15 @@ function placeShape(shape, baseRow, baseCol, variant) {
     showExclamationPopup(cleared, currentCombo);
     if (currentCombo >= 2) showComboPopup(currentCombo);
     gainText = currentCombo >= 2
-      ? `+${placedCount} block(s), +${lineScore} pts, combo bonus +${comboBonus} (${cleared} line(s) · combo ${currentCombo}!)`
-      : `+${placedCount} block(s), +${lineScore} pts (${cleared} line clear!)`;
+      ? `+${finalScore.toLocaleString()} pts (${cleared} line(s) · combo ${currentCombo}x!)`
+      : `+${finalScore.toLocaleString()} pts (${cleared} line clear!)`;
   } else {
-    currentCombo = 0;
-    score += placedCount;
+    if (comboTimeLeft <= 0) {
+      currentCombo = 0;
+    }
+    score += blockScore;
     scoreFlash();
-    floatScorePopup(placedCount);
+    floatScorePopup(blockScore);
   }
 
   if (score > bestScore) {
@@ -611,6 +800,7 @@ function placeShape(shape, baseRow, baseCol, variant) {
   }
 
   updateScoreDisplays(gainText);
+  updateRank();
 
   renderBoard();
 
@@ -1151,7 +1341,7 @@ function showHint() {
 
 function handleGameOver() {
   playGameOverSound();
-  finalScoreEl.textContent = score;
+  finalScoreEl.textContent = formatScore(score);
   gameOverModal.classList.remove('hidden');
   requestAnimationFrame(() => {
     gameOverModal.classList.add('modal-visible');
@@ -1166,9 +1356,25 @@ function resetGame() {
   totalLines = 0;
   currentCombo = 0;
   bestCombo = 0;
+  feverGauge = 0;
+  feverModeActive = false;
+  comboTimeLeft = 10;
+  if (comboTimer) {
+    clearInterval(comboTimer);
+    comboTimer = null;
+  }
+  if (feverModeTimer) {
+    clearTimeout(feverModeTimer);
+    feverModeTimer = null;
+  }
+  if (feverGaugeEl) feverGaugeEl.style.width = '0%';
+  if (comboTimerEl) comboTimerEl.textContent = '';
+  if (boardWrap) {
+    boardWrap.classList.remove('board-rainbow', 'fever-active');
+  }
   updateScoreDisplays('');
+  updateRank();
   if (effectLayer) effectLayer.innerHTML = '';
-  if (boardWrap) boardWrap.classList.remove('board-rainbow');
   document.querySelectorAll('.fireworks-overlay').forEach((el) => el.remove());
   renderBoard();
   if (piecesEl) piecesEl.innerHTML = '';
@@ -1177,11 +1383,179 @@ function resetGame() {
   gameOverModal.classList.remove('modal-visible');
 }
 
+function useMidasTouch() {
+  if (items.midas <= 0) return false;
+  const centerRow = Math.floor(BOARD_SIZE / 2);
+  const centerCol = Math.floor(BOARD_SIZE / 2);
+  let clearedCount = 0;
+  let clearedScore = 0;
+  for (let r = centerRow - 1; r <= centerRow + 1; r++) {
+    for (let c = centerCol - 1; c <= centerCol + 1; c++) {
+      if (r >= 0 && r < BOARD_SIZE && c >= 0 && c < BOARD_SIZE && board[r][c] === 1) {
+        board[r][c] = 0;
+        cellVariants[r][c] = null;
+        clearedCount++;
+        clearedScore += METAL_SCORES[METAL_TYPES.GOLD_24K];
+      }
+    }
+  }
+  if (clearedCount > 0) {
+    score += clearedScore;
+    renderBoard();
+    screenShake();
+    scoreFlash();
+    floatScorePopup(clearedScore);
+    if (score > bestScore) {
+      bestScore = score;
+      saveBestScore();
+    }
+    updateScoreDisplays(`Midas Touch cleared ${clearedCount} blocks!`);
+    updateRank();
+  }
+  items.midas--;
+  saveItems();
+  updateItemDisplays();
+  return true;
+}
+
+function useMoneyLaunder() {
+  if (items.launder <= 0) return false;
+  generatePieces();
+  items.launder--;
+  saveItems();
+  updateItemDisplays();
+  if (lastGainEl) lastGainEl.textContent = 'Money Launder: Blocks refreshed!';
+  return true;
+}
+
+function useGoldenHammer() {
+  if (items.hammer <= 0) return false;
+  const centerRow = Math.floor(BOARD_SIZE / 2);
+  const centerCol = Math.floor(BOARD_SIZE / 2);
+  let clearedCount = 0;
+  let clearedScore = 0;
+  for (let r = centerRow - 2; r <= centerRow + 1; r++) {
+    for (let c = centerCol - 2; c <= centerCol + 1; c++) {
+      if (r >= 0 && r < BOARD_SIZE && c >= 0 && c < BOARD_SIZE && board[r][c] === 1) {
+        const variant = cellVariants[r][c] ?? 0;
+        board[r][c] = 0;
+        cellVariants[r][c] = null;
+        clearedCount++;
+        clearedScore += METAL_SCORES[variant];
+      }
+    }
+  }
+  if (clearedCount > 0) {
+    score += clearedScore;
+    renderBoard();
+    screenShake();
+    scoreFlash();
+    floatScorePopup(clearedScore);
+    if (score > bestScore) {
+      bestScore = score;
+      saveBestScore();
+    }
+    updateScoreDisplays(`Golden Hammer cleared ${clearedCount} blocks!`);
+    updateRank();
+  }
+  items.hammer--;
+  saveItems();
+  updateItemDisplays();
+  return true;
+}
+
+function useTaxBreak() {
+  if (items.tax <= 0) return false;
+  const variantCounts = [0, 0, 0, 0, 0];
+  for (let r = 0; r < BOARD_SIZE; r++) {
+    for (let c = 0; c < BOARD_SIZE; c++) {
+      if (board[r][c] === 1 && cellVariants[r][c] != null) {
+        variantCounts[cellVariants[r][c]]++;
+      }
+    }
+  }
+  const mostCommonVariant = variantCounts.indexOf(Math.max(...variantCounts));
+  let clearedCount = 0;
+  let clearedScore = 0;
+  for (let r = 0; r < BOARD_SIZE; r++) {
+    for (let c = 0; c < BOARD_SIZE; c++) {
+      if (board[r][c] === 1 && cellVariants[r][c] === mostCommonVariant) {
+        board[r][c] = 0;
+        cellVariants[r][c] = null;
+        clearedCount++;
+        clearedScore += METAL_SCORES[mostCommonVariant];
+      }
+    }
+  }
+  if (clearedCount > 0) {
+    score += clearedScore;
+    renderBoard();
+    screenShake();
+    scoreFlash();
+    floatScorePopup(clearedScore);
+    if (score > bestScore) {
+      bestScore = score;
+      saveBestScore();
+    }
+    updateScoreDisplays(`Tax Break cleared ${clearedCount} ${METAL_NAMES[mostCommonVariant]} blocks!`);
+    updateRank();
+  }
+  items.tax--;
+  saveItems();
+  updateItemDisplays();
+  return true;
+}
+
+function handleItemUse(itemType) {
+  if (!confirm(`Use ${itemType}?`)) return;
+  let used = false;
+  switch (itemType) {
+    case 'midas':
+      used = useMidasTouch();
+      break;
+    case 'launder':
+      used = useMoneyLaunder();
+      break;
+    case 'hammer':
+      used = useGoldenHammer();
+      break;
+    case 'tax':
+      used = useTaxBreak();
+      break;
+  }
+  if (used && itemModal) {
+    itemModal.classList.add('hidden');
+    itemModal.classList.remove('modal-visible');
+  }
+}
+
 resetBtn.addEventListener('click', resetGame);
 restartBtn.addEventListener('click', resetGame);
 if (hintBtn) {
   hintBtn.addEventListener('click', showHint);
 }
+if (itemBtn) {
+  itemBtn.addEventListener('click', () => {
+    if (!itemModal) return;
+    itemModal.classList.remove('hidden');
+    requestAnimationFrame(() => {
+      itemModal.classList.add('modal-visible');
+    });
+  });
+}
+if (closeItemModal) {
+  closeItemModal.addEventListener('click', () => {
+    if (!itemModal) return;
+    itemModal.classList.add('hidden');
+    itemModal.classList.remove('modal-visible');
+  });
+}
+document.querySelectorAll('.item-use-btn').forEach((btn) => {
+  btn.addEventListener('click', (e) => {
+    const itemType = e.currentTarget.dataset.item;
+    handleItemUse(itemType);
+  });
+});
 
 // 사용자 제스처 시 오디오 잠금 해제 (브라우저 정책)
 function unlockAudio() {
@@ -1211,6 +1585,8 @@ if (bgmBtn) {
 
 // 초기화
 loadBestScore();
+loadItems();
 setupBoard();
 updateScoreDisplays('');
+updateRank();
 generatePieces();

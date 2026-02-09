@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Treasure Vault — Gold Blast</title>
+    <title>Golden Blast</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <meta name="theme-color" content="#2a1a0e" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -13,8 +13,14 @@
     <div class="app">
       <header class="header">
         <div class="title-group">
-          <h1 class="game-title">Treasure Vault</h1>
+          <h1 class="game-title">Golden Blast</h1>
           <p class="subtitle">Fill rows & columns to clear lines and stack gold!</p>
+        </div>
+        <div class="leaderboard-info">
+          <div class="rank-badge">
+            <span class="rank-label">Rank</span>
+            <span id="playerRank" class="rank-value">-</span>
+          </div>
         </div>
         <div class="score-panel">
           <div class="score-box">
@@ -44,10 +50,23 @@
         <div id="pieces" class="pieces-container"></div>
       </section>
 
+      <section class="fever-section">
+        <div class="fever-header">
+          <span class="fever-label">Fever Gauge</span>
+          <span id="comboTimer" class="combo-timer">10s</span>
+        </div>
+        <div class="fever-gauge-container">
+          <div id="feverGauge" class="fever-gauge">
+            <div id="feverGaugeFill" class="fever-gauge-fill"></div>
+          </div>
+        </div>
+      </section>
+
       <footer class="footer">
         <div class="footer-left">
           <button id="resetBtn" class="primary-btn">New Game</button>
           <button id="hintBtn" class="secondary-btn">Hint</button>
+          <button id="itemBtn" class="secondary-btn" type="button" title="Items">💎 Items</button>
           <button id="bgmBtn" class="secondary-btn" type="button" title="Toggle BGM" aria-pressed="false">🎵 BGM</button>
         </div>
         <p class="hint">
@@ -58,10 +77,43 @@
 
     <div id="gameOverModal" class="modal hidden">
       <div class="modal-content">
-        <h2>Vault Closed</h2>
+        <h2>Game Over</h2>
         <p>No more room for gold.</p>
         <p>Final score: <span id="finalScore">0</span></p>
         <button id="restartBtn" class="primary-btn">Play Again</button>
+      </div>
+    </div>
+
+    <div id="itemModal" class="modal hidden">
+      <div class="modal-content">
+        <h2>Items</h2>
+        <div class="item-grid">
+          <div class="item-card" data-item="midas">
+            <div class="item-icon">👑</div>
+            <div class="item-name">Midas Touch</div>
+            <div class="item-count" id="itemMidasCount">0</div>
+            <button class="item-use-btn" data-item="midas">Use</button>
+          </div>
+          <div class="item-card" data-item="launder">
+            <div class="item-icon">💼</div>
+            <div class="item-name">Money Launder</div>
+            <div class="item-count" id="itemLaunderCount">0</div>
+            <button class="item-use-btn" data-item="launder">Use</button>
+          </div>
+          <div class="item-card" data-item="hammer">
+            <div class="item-icon">🔨</div>
+            <div class="item-name">Golden Hammer</div>
+            <div class="item-count" id="itemHammerCount">0</div>
+            <button class="item-use-btn" data-item="hammer">Use</button>
+          </div>
+          <div class="item-card" data-item="tax">
+            <div class="item-icon">📋</div>
+            <div class="item-name">Tax Break</div>
+            <div class="item-count" id="itemTaxCount">0</div>
+            <button class="item-use-btn" data-item="tax">Use</button>
+          </div>
+        </div>
+        <button id="closeItemModal" class="secondary-btn">Close</button>
       </div>
     </div>
 
