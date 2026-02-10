@@ -32,7 +32,7 @@ body {
   min-height: 100dvh;
   font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
   background: 
-    linear-gradient(180deg, rgba(13, 8, 5, 0.45) 0%, rgba(26, 15, 10, 0.4) 50%, rgba(13, 8, 5, 0.5) 100%),
+    linear-gradient(180deg, rgba(13, 8, 5, 0.55) 0%, rgba(26, 15, 10, 0.5) 50%, rgba(13, 8, 5, 0.6) 100%),
     url('bg-vault.png') center center / cover no-repeat fixed;
   color: var(--text);
   display: flex;
@@ -46,8 +46,8 @@ body {
   margin: 24px;
   padding: 24px 24px 32px;
   border-radius: 20px;
-  background: linear-gradient(165deg, rgba(42, 26, 14, 0.42) 0%, rgba(61, 40, 23, 0.38) 25%, rgba(37, 24, 16, 0.45) 70%);
-  border: 2px solid rgba(74, 53, 32, 0.5);
+  background: linear-gradient(165deg, rgba(42, 26, 14, 0.52) 0%, rgba(61, 40, 23, 0.48) 25%, rgba(37, 24, 16, 0.55) 70%);
+  border: 2px solid rgba(74, 53, 32, 0.6);
   box-shadow:
     var(--shadow-soft),
     inset 0 1px 0 rgba(212, 168, 75, 0.12);
@@ -80,13 +80,13 @@ body {
 .rank-badge {
   padding: 6px 12px;
   border-radius: 6px;
-  background: linear-gradient(145deg, rgba(42, 26, 14, 0.55), rgba(37, 24, 16, 0.5));
-  border: 1px solid rgba(74, 53, 32, 0.5);
+  background: linear-gradient(145deg, rgba(42, 26, 14, 0.65), rgba(37, 24, 16, 0.6));
+  border: 1px solid rgba(74, 53, 32, 0.6);
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 1px;
-  box-shadow: inset 0 1px 0 rgba(212, 168, 75, 0.08);
+  box-shadow: inset 0 1px 0 rgba(212, 168, 75, 0.12);
 }
 
 .rank-label {
@@ -126,9 +126,9 @@ body {
   min-width: 150px;
   padding: 10px 14px;
   border-radius: 10px;
-  background: linear-gradient(145deg, rgba(42, 26, 14, 0.55), rgba(37, 24, 16, 0.5));
-  border: 1px solid rgba(74, 53, 32, 0.5);
-  box-shadow: inset 0 1px 0 rgba(212, 168, 75, 0.08);
+  background: linear-gradient(145deg, rgba(42, 26, 14, 0.65), rgba(37, 24, 16, 0.6));
+  border: 1px solid rgba(74, 53, 32, 0.6);
+  box-shadow: inset 0 1px 0 rgba(212, 168, 75, 0.12);
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -173,24 +173,24 @@ body {
 .pieces-section {
   border-radius: var(--radius-lg);
   padding: 18px 18px 20px;
-  border: 2px solid rgba(74, 53, 32, 0.45);
+  border: 2px solid rgba(74, 53, 32, 0.55);
   box-shadow:
-    inset 0 0 30px rgba(0, 0, 0, 0.1),
-    0 8px 24px rgba(0, 0, 0, 0.2);
+    inset 0 0 30px rgba(0, 0, 0, 0.18),
+    0 8px 24px rgba(0, 0, 0, 0.28);
 }
 
 .board-section {
-  background: linear-gradient(180deg, rgba(42, 26, 14, 0.08) 0%, rgba(13, 8, 5, 0.12) 100%);
+  background: linear-gradient(180deg, rgba(42, 26, 14, 0.18) 0%, rgba(13, 8, 5, 0.22) 100%);
   box-shadow:
-    inset 0 0 24px rgba(0, 0, 0, 0.08),
-    0 8px 24px rgba(0, 0, 0, 0.2);
+    inset 0 0 24px rgba(0, 0, 0, 0.15),
+    0 8px 24px rgba(0, 0, 0, 0.28);
 }
 
 .pieces-section {
-  background: linear-gradient(180deg, rgba(42, 26, 14, 0.08) 0%, rgba(13, 8, 5, 0.12) 100%);
+  background: linear-gradient(180deg, rgba(42, 26, 14, 0.18) 0%, rgba(13, 8, 5, 0.22) 100%);
   box-shadow:
-    inset 0 0 24px rgba(0, 0, 0, 0.08),
-    0 8px 24px rgba(0, 0, 0, 0.2);
+    inset 0 0 24px rgba(0, 0, 0, 0.15),
+    0 8px 24px rgba(0, 0, 0, 0.28);
   overflow: hidden;
   min-width: 0;
 }
@@ -198,9 +198,9 @@ body {
 .fever-section {
   border-radius: var(--radius-lg);
   padding: 8px 18px;
-  border: 2px solid rgba(74, 53, 32, 0.45);
-  background: linear-gradient(180deg, rgba(42, 26, 14, 0.08) 0%, rgba(13, 8, 5, 0.12) 100%);
-  box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.08);
+  border: 2px solid rgba(74, 53, 32, 0.55);
+  background: linear-gradient(180deg, rgba(42, 26, 14, 0.18) 0%, rgba(13, 8, 5, 0.22) 100%);
+  box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.15);
 }
 
 .fever-header {
@@ -224,11 +224,11 @@ body {
 .fever-gauge-container {
   width: 100%;
   height: 16px;
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(0, 0, 0, 0.3);
   border-radius: 8px;
   overflow: hidden;
-  border: 1px solid rgba(74, 53, 32, 0.4);
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(74, 53, 32, 0.5);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.28);
 }
 
 .fever-gauge {
@@ -689,19 +689,19 @@ body {
   display: grid;
   grid-template-columns: repeat(var(--size), 1fr);
   gap: 0;
-  background: linear-gradient(180deg, rgba(26, 18, 10, 0.08) 0%, rgba(13, 8, 5, 0.15) 100%);
+  background: linear-gradient(180deg, rgba(26, 18, 10, 0.18) 0%, rgba(13, 8, 5, 0.22) 100%);
   padding: 8px;
   border-radius: 10px;
-  border: 2px solid rgba(74, 53, 32, 0.45);
-  box-shadow: inset 0 0 16px rgba(0, 0, 0, 0.08);
+  border: 2px solid rgba(74, 53, 32, 0.55);
+  box-shadow: inset 0 0 16px rgba(0, 0, 0, 0.15);
 }
 
 .cell {
   width: 100%;
   padding-bottom: 100%;
   border-radius: 0;
-  background: linear-gradient(180deg, rgba(28, 21, 16, 0.12) 0%, rgba(13, 8, 5, 0.18) 100%);
-  border: 1px solid rgba(0, 0, 0, 0.25);
+  background: linear-gradient(180deg, rgba(28, 21, 16, 0.22) 0%, rgba(13, 8, 5, 0.28) 100%);
+  border: 1px solid rgba(0, 0, 0, 0.35);
   position: relative;
   overflow: hidden;
   transition: transform 0.15s ease-out, box-shadow 0.15s ease-out,
@@ -712,8 +712,8 @@ body {
   position: absolute;
   inset: 2px;
   border-radius: 0;
-  background: linear-gradient(145deg, rgba(31, 41, 55, 0.15), rgba(2, 6, 23, 0.22));
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35);
+  background: linear-gradient(145deg, rgba(31, 41, 55, 0.25), rgba(2, 6, 23, 0.32));
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.45);
   transition: background 0.2s ease-out, transform 0.15s ease-out, box-shadow 0.15s ease-out;
   overflow: hidden;
 }
@@ -880,14 +880,14 @@ body {
   padding: 0;
   border: 2px solid rgba(74, 53, 32, 0.5);
   border-radius: 12px;
-  background: linear-gradient(145deg, rgba(42, 26, 14, 0.5), rgba(37, 24, 16, 0.45));
+  background: linear-gradient(145deg, rgba(42, 26, 14, 0.6), rgba(37, 24, 16, 0.55));
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow:
-    0 2px 8px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(212, 168, 75, 0.08);
+    0 2px 8px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(212, 168, 75, 0.12);
   transition: transform 0.15s ease-out, box-shadow 0.15s ease-out, border-color 0.15s ease-out, filter 0.15s ease-out;
   -webkit-tap-highlight-color: transparent;
 }
@@ -949,15 +949,15 @@ body {
   padding: 8px 14px;
   border-radius: 8px;
   border: 1px solid rgba(74, 53, 32, 0.5);
-  background: linear-gradient(180deg, rgba(61, 40, 23, 0.6) 0%, rgba(42, 26, 14, 0.55) 100%);
+  background: linear-gradient(180deg, rgba(61, 40, 23, 0.7) 0%, rgba(42, 26, 14, 0.65) 100%);
   color: var(--text);
   cursor: pointer;
   font-size: 0.9rem;
   font-weight: 600;
   transition: background 0.12s ease-out, transform 0.12s ease-out, box-shadow 0.12s ease-out;
   box-shadow:
-    0 2px 6px rgba(0, 0, 0, 0.15),
-    inset 0 1px 0 rgba(212, 168, 75, 0.08);
+    0 2px 6px rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 rgba(212, 168, 75, 0.12);
 }
 
 .item-inventory-btn:hover {
@@ -1024,14 +1024,14 @@ body {
   gap: 0;
   padding: 4px;
   border-radius: 4px;
-  background: linear-gradient(145deg, rgba(42, 26, 14, 0.5), rgba(37, 24, 16, 0.45));
-  border: 1px solid rgba(74, 53, 32, 0.5);
+  background: linear-gradient(145deg, rgba(42, 26, 14, 0.6), rgba(37, 24, 16, 0.55));
+  border: 1px solid rgba(74, 53, 32, 0.6);
   cursor: grab;
   touch-action: none;
   -webkit-tap-highlight-color: transparent;
   box-shadow:
-    0 4px 12px rgba(0, 0, 0, 0.25),
-    inset 0 1px 0 rgba(212, 168, 75, 0.08);
+    0 4px 12px rgba(0, 0, 0, 0.32),
+    inset 0 1px 0 rgba(212, 168, 75, 0.12);
   transform-origin: center center;
   transition: transform 0.15s ease-out, box-shadow 0.15s ease-out,
     background 0.15s ease-out, opacity 0.2s ease-out;
@@ -1147,12 +1147,12 @@ body {
   border-radius: 8px;
   border: 1px solid rgba(184, 134, 11, 0.7);
   font-weight: 600;
-  background: linear-gradient(180deg, rgba(212, 168, 75, 0.85) 0%, rgba(184, 134, 11, 0.8) 100%);
+  background: linear-gradient(180deg, rgba(212, 168, 75, 0.92) 0%, rgba(184, 134, 11, 0.88) 100%);
   color: #1a0f0a;
   cursor: pointer;
   box-shadow:
-    0 4px 12px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    0 4px 12px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
   transition: transform 0.12s ease-out, box-shadow 0.12s ease-out, filter 0.12s ease-out;
 }
 
@@ -1201,8 +1201,8 @@ body {
   width: 100%;
   max-width: 728px;
   min-height: 90px;
-  background: rgba(26, 15, 10, 0.18);
-  border: 1px solid rgba(74, 53, 32, 0.35);
+  background: rgba(26, 15, 10, 0.28);
+  border: 1px solid rgba(74, 53, 32, 0.45);
   border-radius: 8px;
   display: flex;
   justify-content: center;
@@ -1223,7 +1223,7 @@ body {
   padding: 8px 16px;
   border-radius: 8px;
   border: 1px solid rgba(74, 53, 32, 0.5);
-  background: linear-gradient(180deg, rgba(61, 40, 23, 0.6) 0%, rgba(42, 26, 14, 0.55) 100%);
+  background: linear-gradient(180deg, rgba(61, 40, 23, 0.7) 0%, rgba(42, 26, 14, 0.65) 100%);
   color: var(--text);
   cursor: pointer;
   font-size: 0.85rem;
@@ -1695,7 +1695,9 @@ body {
     padding: 6px;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
   }
 
   .board-wrap {
@@ -1704,14 +1706,14 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    overflow: hidden;
+    overflow: visible;
   }
 
   .board {
     /* 헤더·블록·푸터 제외한 높이에 맞춰 보드가 잘리지 않게 (보드는 정사각) */
-    width: min(76vmin, 55dvh, 100%);
+    width: min(72vmin, 42dvh, 100%);
     max-width: 100%;
-    max-height: 100%;
+    max-height: none;
     padding: 2px;
     border-radius: 8px;
     flex-shrink: 0;
