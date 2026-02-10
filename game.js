@@ -395,6 +395,14 @@ function updateItemDisplays() {
   if (hammerCountEl) hammerCountEl.textContent = items.hammer;
   if (taxCountEl) taxCountEl.textContent = items.tax;
   
+  /* 캔디크러시 스타일 아이템 바: 아이콘 슬롯 개수·비활성 동기화 */
+  document.querySelectorAll('.item-slot').forEach((slot) => {
+    const itemType = slot.dataset.item;
+    const countEl = slot.querySelector('.item-slot-count');
+    if (countEl) countEl.textContent = items[itemType] || 0;
+    slot.disabled = !(items[itemType] > 0);
+  });
+  
   const useButtons = document.querySelectorAll('.item-use-btn');
   useButtons.forEach((btn) => {
     const itemType = btn.dataset.item;
@@ -1720,6 +1728,14 @@ function closeItemModal() {
 if (itemBtn) {
   itemBtn.addEventListener('click', openItemModal);
 }
+
+/* 캔디크러시 스타일: 아이템 바 슬롯 클릭 시 사용 */
+document.getElementById('itemBar')?.addEventListener('click', (e) => {
+  const slot = e.target.closest('.item-slot');
+  if (!slot || slot.disabled) return;
+  const itemType = slot.dataset.item;
+  handleItemUse(itemType);
+});
 if (closeItemModalBtn) {
   closeItemModalBtn.addEventListener('click', closeItemModal);
 }

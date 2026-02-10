@@ -14,25 +14,26 @@
       <header class="header">
         <div class="title-group">
           <h1 class="game-title">Golden Blast</h1>
-          <p class="subtitle">Fill rows & columns to clear lines and stack gold!</p>
         </div>
-        <div class="leaderboard-info">
-          <div class="rank-badge">
-            <span class="rank-label">Rank</span>
-            <span id="playerRank" class="rank-value">-</span>
+        <div class="header-row">
+          <div class="leaderboard-info">
+            <div class="rank-badge">
+              <span class="rank-label" aria-hidden="true"></span>
+              <span id="playerRank" class="rank-value">-</span>
+            </div>
+          </div>
+          <div class="score-panel">
+            <div class="score-box">
+              <span class="label" aria-hidden="true"></span>
+              <span id="score" class="value">0</span>
+            </div>
+            <div class="score-box">
+              <span class="label" aria-hidden="true"></span>
+              <span id="bestScore" class="value">0</span>
+            </div>
           </div>
         </div>
-        <div class="score-panel">
-          <div class="score-box">
-            <span class="label">Score</span>
-            <span id="score" class="value">0</span>
-          </div>
-          <div class="score-box">
-            <span class="label">Best</span>
-            <span id="bestScore" class="value">0</span>
-          </div>
-        </div>
-        <p id="lastGain" class="last-gain"></p>
+        <p id="lastGain" class="last-gain" aria-hidden="true"></p>
       </header>
 
       <main class="main">
@@ -47,18 +48,38 @@
 
       <section class="pieces-section">
         <div class="pieces-header">
-          <h2 class="pieces-title">Pick a block</h2>
-          <button id="itemBtn" class="item-inventory-btn" type="button" title="Items">
-            <span class="item-btn-icon">💎</span>
-            <span class="item-btn-label">Items</span>
-          </button>
+          <h2 class="pieces-title" aria-hidden="true"></h2>
+          <div class="pieces-header-right">
+            <div id="itemBar" class="item-bar" aria-label="Item boosters">
+              <button type="button" class="item-slot" data-item="midas" aria-label="Midas Touch" title="Midas Touch">
+                <span class="item-slot-icon">👑</span>
+                <span class="item-slot-count">0</span>
+              </button>
+              <button type="button" class="item-slot" data-item="launder" aria-label="Money Launder" title="Money Launder">
+                <span class="item-slot-icon">💼</span>
+                <span class="item-slot-count">0</span>
+              </button>
+              <button type="button" class="item-slot" data-item="hammer" aria-label="Golden Hammer" title="Golden Hammer">
+                <span class="item-slot-icon">🔨</span>
+                <span class="item-slot-count">0</span>
+              </button>
+              <button type="button" class="item-slot" data-item="tax" aria-label="Tax Break" title="Tax Break">
+                <span class="item-slot-icon">📋</span>
+                <span class="item-slot-count">0</span>
+              </button>
+            </div>
+            <button id="itemBtn" class="item-inventory-btn" type="button" title="Items" aria-label="Items">
+              <span class="item-btn-icon">💎</span>
+              <span class="item-btn-label">Items</span>
+            </button>
+          </div>
         </div>
         <div id="pieces" class="pieces-container"></div>
       </section>
 
       <section class="fever-section">
         <div class="fever-header">
-          <span class="fever-label">Fever Gauge</span>
+          <span class="fever-label" aria-hidden="true"></span>
           <span id="comboTimer" class="combo-timer">10s</span>
         </div>
         <div class="fever-gauge-container">
@@ -70,13 +91,11 @@
 
       <footer class="footer">
         <div class="footer-left">
-          <button id="resetBtn" class="primary-btn">New Game</button>
-          <button id="hintBtn" class="secondary-btn">Hint</button>
-          <button id="bgmBtn" class="secondary-btn" type="button" title="Toggle BGM" aria-pressed="false">🎵 BGM</button>
+          <button id="resetBtn" class="primary-btn" aria-label="New Game">New Game</button>
+          <button id="hintBtn" class="secondary-btn" aria-label="Hint">Hint</button>
+          <button id="bgmBtn" class="secondary-btn" type="button" title="Toggle BGM" aria-pressed="false" aria-label="BGM">🎵 BGM</button>
         </div>
-        <p class="hint">
-          Drag blocks onto the board. Complete a full row or column to clear it and earn points. Use Hint to see one valid spot.
-        </p>
+        <p class="hint" aria-hidden="true"></p>
       </footer>
 
       <div class="ad-banner">

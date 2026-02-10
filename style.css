@@ -57,15 +57,24 @@ body {
 }
 
 .header {
-  display: grid;
-  grid-template-columns: 1fr auto auto 1fr;
-  gap: 12px;
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  min-height: 60px;
+  justify-content: center;
+  gap: 12px;
+  min-height: 48px;
+}
+
+.header-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: nowrap;
 }
 
 .leaderboard-info {
-  justify-self: center;
+  flex-shrink: 0;
 }
 
 .rank-badge {
@@ -81,10 +90,7 @@ body {
 }
 
 .rank-label {
-  font-size: 0.7rem;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  display: none;
 }
 
 .rank-value {
@@ -95,18 +101,7 @@ body {
 }
 
 .title-group {
-  min-width: 0;
-  justify-self: start;
-}
-
-.score-panel {
-  justify-self: center;
-  display: flex;
-  gap: 16px;
-}
-
-.header .last-gain {
-  justify-self: end;
+  flex-shrink: 0;
 }
 
 .game-title {
@@ -120,10 +115,10 @@ body {
   text-shadow: 0 0 30px rgba(212, 168, 75, 0.3);
 }
 
-.subtitle {
-  margin: 8px 0 0;
-  color: var(--muted);
-  font-size: 0.9rem;
+.score-panel {
+  display: flex;
+  gap: 16px;
+  flex-shrink: 0;
 }
 
 .score-box {
@@ -142,13 +137,7 @@ body {
 }
 
 .score-box .label {
-  font-size: 1rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--muted);
-  white-space: nowrap;
-  overflow: visible;
-  text-overflow: clip;
+  display: none;
 }
 
 .score-box .value {
@@ -170,19 +159,10 @@ body {
 }
 
 .last-gain {
+  display: none;
   margin: 0;
   font-size: 0.8rem;
   color: var(--muted);
-  min-height: 1.5em;
-  height: 1.5em;
-  line-height: 1.5em;
-  min-width: 200px;
-  max-width: 260px;
-  text-align: right;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  flex-shrink: 0;
 }
 
 .main {
@@ -231,9 +211,7 @@ body {
 }
 
 .fever-label {
-  font-size: 0.85rem;
-  color: var(--muted);
-  font-weight: 600;
+  display: none;
 }
 
 .combo-timer {
@@ -876,12 +854,92 @@ body {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 12px;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.pieces-header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* 캔디크러시 스타일 아이템 바: 아이콘 + 개수 표시 */
+.item-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.item-slot {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  background: linear-gradient(145deg, var(--wood-dark), var(--bg-soft));
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(212, 168, 75, 0.12);
+  transition: transform 0.15s ease-out, box-shadow 0.15s ease-out, border-color 0.15s ease-out, filter 0.15s ease-out;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.item-slot:hover:not(:disabled) {
+  transform: scale(1.08);
+  border-color: var(--gold-dim);
+  box-shadow: 0 4px 14px rgba(212, 168, 75, 0.35);
+}
+
+.item-slot:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.item-slot:disabled {
+  cursor: not-allowed;
+  filter: grayscale(0.85);
+  opacity: 0.7;
+}
+
+.item-slot-icon {
+  font-size: 1.6rem;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.item-slot-count {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 9px;
+  background: linear-gradient(180deg, var(--gold) 0%, var(--gold-dim) 100%);
+  color: #1a0f0a;
+  font-size: 0.75rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+}
+
+.item-slot:disabled .item-slot-count {
+  background: var(--muted);
+  color: var(--text);
 }
 
 .pieces-title {
-  margin: 0;
-  font-size: 1rem;
-  color: var(--muted);
+  display: none;
 }
 
 .item-inventory-btn {
@@ -925,8 +983,8 @@ body {
 
 /* 블럭 선택 창: 슬롯·블럭 축소 */
 .pieces-container {
-  --tray-cell: 17px;
-  --tray-slot: calc(var(--tray-cell) * 5 + 10px);
+  --tray-cell: 24px;
+  --tray-slot: calc(var(--tray-cell) * 5 + 12px);
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
@@ -1016,17 +1074,17 @@ body {
 }
 
 .pieces-container .piece-cell {
-  width: 17px;
-  height: 17px;
+  width: 24px;
+  height: 24px;
 }
 
 .pieces-container .piece-empty {
-  width: 17px;
-  height: 17px;
+  width: 24px;
+  height: 24px;
 }
 
 .pieces-container .piece {
-  padding: 3px;
+  padding: 4px;
   gap: 0;
 }
 
@@ -1123,6 +1181,7 @@ body {
 }
 
 .hint {
+  display: none;
   margin: 0;
   font-size: 0.85rem;
   color: var(--muted);
@@ -1402,38 +1461,21 @@ body {
   }
 
   .header {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
+    flex-direction: row;
+    justify-content: center;
     gap: 8px;
     min-height: 0;
   }
 
-  .title-group {
-    order: 1;
-    text-align: center;
-  }
-
-  .game-title {
-    font-size: 1.4rem;
-  }
-
-  .subtitle {
-    font-size: 0.7rem;
-    margin-top: 4px;
-  }
-
-  .leaderboard-info {
-    order: 2;
-    align-self: center;
+  .header-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
   }
 
   .rank-badge {
     padding: 5px 8px;
-  }
-
-  .rank-label {
-    font-size: 0.6rem;
   }
 
   .rank-value {
@@ -1441,38 +1483,19 @@ body {
   }
 
   .score-panel {
-    order: 3;
-    align-self: center;
-    flex-wrap: wrap;
     gap: 8px;
-    max-width: 100%;
-    justify-content: center;
-  }
-
-  .header .last-gain {
-    order: 4;
-    justify-self: center;
-    text-align: center;
-    max-width: 100%;
   }
 
   .score-box {
-    width: calc(50% - 4px);
-    min-width: 90px;
-    flex: 1 1 calc(50% - 4px);
-    max-width: 160px;
+    min-width: 70px;
+    max-width: 100px;
     padding: 6px 8px;
-    gap: 3px;
+    gap: 0;
     overflow: visible;
   }
 
   .score-box .value {
     font-size: 1.4rem;
-    overflow: visible;
-  }
-
-  .score-box .label {
-    font-size: 0.75rem;
     overflow: visible;
   }
 
@@ -1592,63 +1615,52 @@ body {
   .header {
     flex-shrink: 0;
     min-height: 0;
-    gap: 4px;
+    gap: 6px;
     display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    flex-wrap: wrap;
+    flex-direction: row;
+    align-items: center;
     justify-content: center;
+    flex-wrap: wrap;
   }
 
   .title-group {
-    order: 1;
-    flex-shrink: 0;
-    text-align: center;
-    margin-bottom: 0;
     width: 100%;
-  }
-
-  /* 랭크와 스코어를 한 줄에 나란히 배치 */
-  .leaderboard-info {
-    order: 2;
+    text-align: center;
+    order: -1;
     flex-shrink: 0;
-    align-self: center;
-    margin-right: 6px;
-  }
-
-  .rank-badge {
-    padding: 2px 5px;
-    gap: 0;
-  }
-
-  .rank-label {
-    font-size: 0.5rem;
-    line-height: 1;
-  }
-
-  .rank-value {
-    font-size: 0.75rem;
-    line-height: 1;
   }
 
   .game-title {
     font-size: 1rem;
     letter-spacing: 0.04em;
-    line-height: 1.2;
   }
 
-  .subtitle {
-    font-size: 0.6rem;
-    margin-top: 2px;
-    line-height: 1.2;
-    display: block;
+  .header-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .leaderboard-info {
+    flex-shrink: 0;
+  }
+
+  .rank-badge {
+    padding: 2px 6px;
+    gap: 0;
+  }
+
+  .rank-value {
+    font-size: 0.8rem;
+    line-height: 1;
   }
 
   .score-panel {
-    order: 2;
     flex-shrink: 0;
-    align-self: center;
-    gap: 4px;
+    gap: 6px;
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -1656,39 +1668,17 @@ body {
   }
 
   .score-box {
-    padding: 3px 5px;
-    min-width: 60px;
-    max-width: 75px;
-    gap: 1px;
-    overflow: visible;
-  }
-
-  .score-box .label {
-    font-size: 0.65rem;
-    line-height: 1;
+    padding: 2px 5px;
+    min-width: 48px;
+    max-width: 64px;
+    gap: 0;
     overflow: visible;
   }
 
   .score-box .value {
-    font-size: 0.95rem;
+    font-size: 0.85rem;
     line-height: 1.1;
     overflow: visible;
-  }
-
-  .header .last-gain {
-    order: 4;
-    justify-self: center;
-    text-align: center;
-  }
-
-  .last-gain {
-    min-height: 1em;
-    height: 1em;
-    line-height: 1em;
-    font-size: 0.6rem;
-    min-width: 0;
-    max-width: 100%;
-    margin-top: 0;
   }
 
   .main {
@@ -1735,9 +1725,26 @@ body {
     gap: 8px;
   }
 
-  .pieces-title {
-    margin: 0;
-    font-size: 0.75rem;
+  .item-bar {
+    gap: 6px;
+  }
+
+  .item-slot {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+  }
+
+  .item-slot-icon {
+    font-size: 1.3rem;
+  }
+
+  .item-slot-count {
+    min-width: 16px;
+    height: 16px;
+    font-size: 0.65rem;
+    bottom: 1px;
+    right: 1px;
   }
 
   .item-inventory-btn {
@@ -1755,10 +1762,10 @@ body {
   }
 
   .pieces-container {
-    --tray-cell: 12px;
-    --tray-slot: calc(var(--tray-cell) * 5 + 6px);
-    min-height: 48px;
-    gap: 8px;
+    --tray-cell: 18px;
+    --tray-slot: calc(var(--tray-cell) * 5 + 8px);
+    min-height: 56px;
+    gap: 10px;
     flex-wrap: nowrap;
     justify-content: center;
   }
@@ -1771,17 +1778,17 @@ body {
   }
 
   .pieces-container .piece-cell {
-    width: 12px;
-    height: 12px;
+    width: 18px;
+    height: 18px;
   }
 
   .pieces-container .piece-empty {
-    width: 12px;
-    height: 12px;
+    width: 18px;
+    height: 18px;
   }
 
   .pieces-container .piece {
-    padding: 2px;
+    padding: 3px;
   }
 
   .footer {
@@ -1844,25 +1851,34 @@ body {
   }
 }
 
-/* 매우 좁은 화면: 점수판 2열 고정, 넘침 방지 */
+/* 매우 좁은 화면: 랭크·스코어·최고점수 한 줄 유지 */
 @media (max-width: 400px) {
+  .header-row {
+    gap: 4px;
+  }
+
   .score-panel {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
+    gap: 4px;
   }
 
   .score-box {
-    width: 100%;
-    max-width: none;
-    min-width: 0;
-    flex: none;
+    min-width: 42px;
+    max-width: 56px;
+    padding: 2px 4px;
     overflow: visible;
   }
 
-  .score-box .value,
-  .score-box .label {
+  .score-box .value {
+    font-size: 0.75rem;
     overflow: visible;
+  }
+
+  .rank-badge {
+    padding: 2px 4px;
+  }
+
+  .rank-value {
+    font-size: 0.75rem;
   }
 }
 
