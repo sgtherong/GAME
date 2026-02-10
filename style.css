@@ -32,8 +32,8 @@ body {
   min-height: 100dvh;
   font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
   background: 
-    linear-gradient(180deg, rgba(13, 8, 5, 0.85) 0%, rgba(26, 15, 10, 0.78) 50%, rgba(13, 8, 5, 0.9) 100%),
-    url('Gemini_Generated_Image_u5ftenu5ftenu5ft.png') center center / cover no-repeat fixed;
+    linear-gradient(180deg, rgba(13, 8, 5, 0.45) 0%, rgba(26, 15, 10, 0.4) 50%, rgba(13, 8, 5, 0.5) 100%),
+    url('bg-vault.png') center center / cover no-repeat fixed;
   color: var(--text);
   display: flex;
   justify-content: center;
@@ -46,8 +46,8 @@ body {
   margin: 24px;
   padding: 24px 24px 32px;
   border-radius: 20px;
-  background: linear-gradient(165deg, rgba(42, 26, 14, 0.75) 0%, rgba(61, 40, 23, 0.7) 25%, rgba(37, 24, 16, 0.78) 70%);
-  border: 2px solid rgba(74, 53, 32, 0.9);
+  background: linear-gradient(165deg, rgba(42, 26, 14, 0.42) 0%, rgba(61, 40, 23, 0.38) 25%, rgba(37, 24, 16, 0.45) 70%);
+  border: 2px solid rgba(74, 53, 32, 0.5);
   box-shadow:
     var(--shadow-soft),
     inset 0 1px 0 rgba(212, 168, 75, 0.12);
@@ -80,13 +80,13 @@ body {
 .rank-badge {
   padding: 6px 12px;
   border-radius: 6px;
-  background: linear-gradient(145deg, var(--wood-dark), var(--bg-soft));
-  border: 1px solid var(--border);
+  background: linear-gradient(145deg, rgba(42, 26, 14, 0.55), rgba(37, 24, 16, 0.5));
+  border: 1px solid rgba(74, 53, 32, 0.5);
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 1px;
-  box-shadow: inset 0 1px 0 rgba(212, 168, 75, 0.12);
+  box-shadow: inset 0 1px 0 rgba(212, 168, 75, 0.08);
 }
 
 .rank-label {
@@ -126,9 +126,9 @@ body {
   min-width: 150px;
   padding: 10px 14px;
   border-radius: 10px;
-  background: linear-gradient(145deg, var(--wood-dark), var(--bg-soft));
-  border: 1px solid var(--border);
-  box-shadow: inset 0 1px 0 rgba(212, 168, 75, 0.12);
+  background: linear-gradient(145deg, rgba(42, 26, 14, 0.55), rgba(37, 24, 16, 0.5));
+  border: 1px solid rgba(74, 53, 32, 0.5);
+  box-shadow: inset 0 1px 0 rgba(212, 168, 75, 0.08);
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -173,24 +173,24 @@ body {
 .pieces-section {
   border-radius: var(--radius-lg);
   padding: 18px 18px 20px;
-  border: 2px solid rgba(74, 53, 32, 0.85);
+  border: 2px solid rgba(74, 53, 32, 0.45);
   box-shadow:
-    inset 0 0 30px rgba(0, 0, 0, 0.25),
-    0 8px 24px rgba(0, 0, 0, 0.4);
+    inset 0 0 30px rgba(0, 0, 0, 0.1),
+    0 8px 24px rgba(0, 0, 0, 0.2);
 }
 
 .board-section {
-  background: linear-gradient(180deg, rgba(42, 26, 14, 0.2) 0%, rgba(13, 8, 5, 0.28) 100%);
+  background: linear-gradient(180deg, rgba(42, 26, 14, 0.08) 0%, rgba(13, 8, 5, 0.12) 100%);
   box-shadow:
-    inset 0 0 24px rgba(0, 0, 0, 0.15),
-    0 8px 24px rgba(0, 0, 0, 0.4);
+    inset 0 0 24px rgba(0, 0, 0, 0.08),
+    0 8px 24px rgba(0, 0, 0, 0.2);
 }
 
 .pieces-section {
-  background: linear-gradient(180deg, rgba(42, 26, 14, 0.2) 0%, rgba(13, 8, 5, 0.28) 100%);
+  background: linear-gradient(180deg, rgba(42, 26, 14, 0.08) 0%, rgba(13, 8, 5, 0.12) 100%);
   box-shadow:
-    inset 0 0 24px rgba(0, 0, 0, 0.15),
-    0 8px 24px rgba(0, 0, 0, 0.4);
+    inset 0 0 24px rgba(0, 0, 0, 0.08),
+    0 8px 24px rgba(0, 0, 0, 0.2);
   overflow: hidden;
   min-width: 0;
 }
@@ -198,9 +198,9 @@ body {
 .fever-section {
   border-radius: var(--radius-lg);
   padding: 8px 18px;
-  border: 2px solid rgba(74, 53, 32, 0.85);
-  background: linear-gradient(180deg, rgba(42, 26, 14, 0.2) 0%, rgba(13, 8, 5, 0.28) 100%);
-  box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.15);
+  border: 2px solid rgba(74, 53, 32, 0.45);
+  background: linear-gradient(180deg, rgba(42, 26, 14, 0.08) 0%, rgba(13, 8, 5, 0.12) 100%);
+  box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.08);
 }
 
 .fever-header {
@@ -224,11 +224,11 @@ body {
 .fever-gauge-container {
   width: 100%;
   height: 16px;
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(0, 0, 0, 0.2);
   border-radius: 8px;
   overflow: hidden;
-  border: 1px solid rgba(74, 53, 32, 0.6);
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(74, 53, 32, 0.4);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 .fever-gauge {
@@ -689,19 +689,19 @@ body {
   display: grid;
   grid-template-columns: repeat(var(--size), 1fr);
   gap: 0;
-  background: linear-gradient(180deg, rgba(26, 18, 10, 0.18) 0%, rgba(13, 8, 5, 0.32) 100%);
+  background: linear-gradient(180deg, rgba(26, 18, 10, 0.08) 0%, rgba(13, 8, 5, 0.15) 100%);
   padding: 8px;
   border-radius: 10px;
-  border: 2px solid rgba(74, 53, 32, 0.85);
-  box-shadow: inset 0 0 16px rgba(0, 0, 0, 0.18);
+  border: 2px solid rgba(74, 53, 32, 0.45);
+  box-shadow: inset 0 0 16px rgba(0, 0, 0, 0.08);
 }
 
 .cell {
   width: 100%;
   padding-bottom: 100%;
   border-radius: 0;
-  background: linear-gradient(180deg, rgba(28, 21, 16, 0.22) 0%, rgba(13, 8, 5, 0.32) 100%);
-  border: 1px solid rgba(0, 0, 0, 0.4);
+  background: linear-gradient(180deg, rgba(28, 21, 16, 0.12) 0%, rgba(13, 8, 5, 0.18) 100%);
+  border: 1px solid rgba(0, 0, 0, 0.25);
   position: relative;
   overflow: hidden;
   transition: transform 0.15s ease-out, box-shadow 0.15s ease-out,
@@ -712,8 +712,8 @@ body {
   position: absolute;
   inset: 2px;
   border-radius: 0;
-  background: linear-gradient(145deg, rgba(31, 41, 55, 0.28), rgba(2, 6, 23, 0.38));
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.5);
+  background: linear-gradient(145deg, rgba(31, 41, 55, 0.15), rgba(2, 6, 23, 0.22));
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35);
   transition: background 0.2s ease-out, transform 0.15s ease-out, box-shadow 0.15s ease-out;
   overflow: hidden;
 }
@@ -878,16 +878,16 @@ body {
   width: 48px;
   height: 48px;
   padding: 0;
-  border: 2px solid var(--border);
+  border: 2px solid rgba(74, 53, 32, 0.5);
   border-radius: 12px;
-  background: linear-gradient(145deg, var(--wood-dark), var(--bg-soft));
+  background: linear-gradient(145deg, rgba(42, 26, 14, 0.5), rgba(37, 24, 16, 0.45));
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow:
-    0 2px 8px rgba(0, 0, 0, 0.4),
-    inset 0 1px 0 rgba(212, 168, 75, 0.12);
+    0 2px 8px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(212, 168, 75, 0.08);
   transition: transform 0.15s ease-out, box-shadow 0.15s ease-out, border-color 0.15s ease-out, filter 0.15s ease-out;
   -webkit-tap-highlight-color: transparent;
 }
@@ -948,16 +948,16 @@ body {
   gap: 6px;
   padding: 8px 14px;
   border-radius: 8px;
-  border: 1px solid var(--border);
-  background: linear-gradient(180deg, var(--wood) 0%, var(--wood-dark) 100%);
+  border: 1px solid rgba(74, 53, 32, 0.5);
+  background: linear-gradient(180deg, rgba(61, 40, 23, 0.6) 0%, rgba(42, 26, 14, 0.55) 100%);
   color: var(--text);
   cursor: pointer;
   font-size: 0.9rem;
   font-weight: 600;
   transition: background 0.12s ease-out, transform 0.12s ease-out, box-shadow 0.12s ease-out;
   box-shadow:
-    0 2px 6px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(212, 168, 75, 0.1);
+    0 2px 6px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(212, 168, 75, 0.08);
 }
 
 .item-inventory-btn:hover {
@@ -1024,14 +1024,14 @@ body {
   gap: 0;
   padding: 4px;
   border-radius: 4px;
-  background: linear-gradient(145deg, var(--wood-dark), var(--bg-soft));
-  border: 1px solid var(--border);
+  background: linear-gradient(145deg, rgba(42, 26, 14, 0.5), rgba(37, 24, 16, 0.45));
+  border: 1px solid rgba(74, 53, 32, 0.5);
   cursor: grab;
   touch-action: none;
   -webkit-tap-highlight-color: transparent;
   box-shadow:
-    0 4px 12px rgba(0, 0, 0, 0.5),
-    inset 0 1px 0 rgba(212, 168, 75, 0.1);
+    0 4px 12px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(212, 168, 75, 0.08);
   transform-origin: center center;
   transition: transform 0.15s ease-out, box-shadow 0.15s ease-out,
     background 0.15s ease-out, opacity 0.2s ease-out;
@@ -1145,14 +1145,14 @@ body {
 .primary-btn {
   padding: 10px 20px;
   border-radius: 8px;
-  border: 1px solid var(--gold-dim);
+  border: 1px solid rgba(184, 134, 11, 0.7);
   font-weight: 600;
-  background: linear-gradient(180deg, var(--gold) 0%, var(--gold-dim) 100%);
+  background: linear-gradient(180deg, rgba(212, 168, 75, 0.85) 0%, rgba(184, 134, 11, 0.8) 100%);
   color: #1a0f0a;
   cursor: pointer;
   box-shadow:
-    0 4px 12px rgba(0, 0, 0, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    0 4px 12px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
   transition: transform 0.12s ease-out, box-shadow 0.12s ease-out, filter 0.12s ease-out;
 }
 
@@ -1201,8 +1201,8 @@ body {
   width: 100%;
   max-width: 728px;
   min-height: 90px;
-  background: rgba(26, 15, 10, 0.3);
-  border: 1px solid rgba(74, 53, 32, 0.5);
+  background: rgba(26, 15, 10, 0.18);
+  border: 1px solid rgba(74, 53, 32, 0.35);
   border-radius: 8px;
   display: flex;
   justify-content: center;
@@ -1222,8 +1222,8 @@ body {
 .secondary-btn {
   padding: 8px 16px;
   border-radius: 8px;
-  border: 1px solid var(--border);
-  background: linear-gradient(180deg, var(--wood) 0%, var(--wood-dark) 100%);
+  border: 1px solid rgba(74, 53, 32, 0.5);
+  background: linear-gradient(180deg, rgba(61, 40, 23, 0.6) 0%, rgba(42, 26, 14, 0.55) 100%);
   color: var(--text);
   cursor: pointer;
   font-size: 0.85rem;
@@ -1708,11 +1708,13 @@ body {
   }
 
   .board {
-    width: min(76vmin, 100%);
+    /* 헤더·블록·푸터 제외한 높이에 맞춰 보드가 잘리지 않게 (보드는 정사각) */
+    width: min(76vmin, 55dvh, 100%);
     max-width: 100%;
     max-height: 100%;
     padding: 2px;
     border-radius: 8px;
+    flex-shrink: 0;
   }
 
   .pieces-section {
