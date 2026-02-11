@@ -731,12 +731,28 @@ function createRandomPiece(useBoardAware = true) {
   return SHAPES[index].map((row) => row.slice());
 }
 
+/** 두 블럭 형태가 동일한지 비교 */
+function shapesEqual(a, b) {
+  if (!a || !b || a.length !== b.length) return false;
+  if (a[0].length !== b[0].length) return false;
+  for (let r = 0; r < a.length; r++) {
+    for (let c = 0; c < a[0].length; c++) {
+      if (a[r][c] !== b[r][c]) return false;
+    }
+  }
+  return true;
+}
+
 function generatePieces() {
   if (isBoardClear()) {
     // 클리어 상태: 3×3 2개 100%, 3×2 또는 2×3 각 80% 확률(나머지 20% 랜덤)
-    const third = Math.random() < 0.8
+    let third = Math.random() < 0.8
       ? SHAPES[Math.random() < 0.5 ? SHAPE_3X2 : SHAPE_2X3].map((row) => row.slice())
       : createRandomPiece(true);
+    const threeByThree = SHAPES[SHAPE_3X3].map((row) => row.slice());
+    while (shapesEqual(third, threeByThree)) {
+      third = createRandomPiece(true);
+    }
     activePieces = [
       SHAPES[SHAPE_3X3].map((row) => row.slice()),
       SHAPES[SHAPE_3X3].map((row) => row.slice()),
@@ -748,6 +764,10 @@ function generatePieces() {
       createRandomPiece(true),
       createRandomPiece(true),
     ];
+    // 같은 블럭 3개 방지: 모두 동일하면 셋째만 다시 뽑기
+    while (shapesEqual(activePieces[0], activePieces[1]) && shapesEqual(activePieces[1], activePieces[2])) {
+      activePieces[2] = createRandomPiece(true);
+    }
   }
   activeVariants = activePieces.map(() => {
     if (feverModeActive) return METAL_TYPES.GOLD_24K;
@@ -1317,13 +1337,15 @@ function getBoardCellSize() {
   return rect.width / BOARD_SIZE;
 }
 
-/** 커서=블럭 중간 아래. 보드 셀 계산용 고스트 하단·좌측 픽셀 위치 */
+/** 커서보다 50px 위 지점=블럭 기준. 보드 셀 계산용 고스트 하단·좌측 픽셀 위치 */
+const GHOST_OFFSET_Y = 50;
+
 function getGhostBottomLeft(clientX, clientY, shapeRows, shapeCols) {
   const cellSize = getBoardCellSize();
   const ghostW = shapeCols * cellSize;
   return {
     x: clientX - ghostW / 2,
-    y: clientY,
+    y: clientY - GHOST_OFFSET_Y,
   };
 }
 
