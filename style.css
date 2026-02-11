@@ -1179,8 +1179,10 @@ body.fever-mode .app {
   animation: pieceAppear 0.28s ease-out forwards;
 }
 
-.piece.dragging {
-  opacity: 0;
+.piece.dragging,
+.piece-wrapper.dragging {
+  opacity: 0 !important;
+  pointer-events: none;
 }
 
 .ghost-piece {

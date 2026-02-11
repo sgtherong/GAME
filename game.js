@@ -1310,6 +1310,7 @@ function onPieceMouseDown(e) {
   };
 
   piece.classList.add('dragging');
+  wrapper.classList.add('dragging');
 
   updateGhostPosition(e.clientX, e.clientY);
   window.addEventListener('mousemove', onMouseMove);
@@ -1338,6 +1339,7 @@ function onPieceTouchStart(e) {
   };
 
   piece.classList.add('dragging');
+  wrapper.classList.add('dragging');
 
   updateGhostPosition(touch.clientX, touch.clientY);
   window.addEventListener('touchmove', onTouchMove, { passive: false });
@@ -1426,7 +1428,11 @@ function cleanupDrag() {
   if (!dragging) return;
   const { pieceIndex, ghost } = dragging;
   const pieceEl = piecesEl.querySelector(`.piece[data-index="${pieceIndex}"]`);
-  if (pieceEl) pieceEl.classList.remove('dragging');
+  if (pieceEl) {
+    pieceEl.classList.remove('dragging');
+    const wr = pieceEl.closest('.piece-wrapper');
+    if (wr) wr.classList.remove('dragging');
+  }
   if (ghost && ghost.parentNode) ghost.parentNode.removeChild(ghost);
   clearPreview();
   removeDragListeners();
@@ -1479,7 +1485,11 @@ function finishDrag(clientX, clientY) {
   if (dragging.ghost && dragging.ghost.parentNode) {
     dragging.ghost.parentNode.removeChild(dragging.ghost);
   }
-  if (pieceEl) pieceEl.classList.remove('dragging');
+  if (pieceEl) {
+    pieceEl.classList.remove('dragging');
+    const wr = pieceEl.closest('.piece-wrapper');
+    if (wr) wr.classList.remove('dragging');
+  }
   removeDragListeners();
   dragging = null;
 }
