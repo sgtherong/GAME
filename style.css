@@ -1180,7 +1180,7 @@ body.fever-mode .app {
 }
 
 .piece.dragging {
-  opacity: 0.2;
+  opacity: 0;
 }
 
 .ghost-piece {
