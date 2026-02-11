@@ -340,6 +340,16 @@ function createEmptyBoard() {
   return Array.from({ length: BOARD_SIZE }, () => Array(BOARD_SIZE).fill(0));
 }
 
+/** 보드가 완전히 비어 있는지(클리어된 상태) */
+function isBoardClear() {
+  for (let r = 0; r < BOARD_SIZE; r++) {
+    for (let c = 0; c < BOARD_SIZE; c++) {
+      if (board[r][c] === 1) return false;
+    }
+  }
+  return true;
+}
+
 function loadBestScore() {
   try {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
@@ -682,6 +692,9 @@ function floatScorePopup(points) {
 
 /** 3×3, 3×2, 2×3 블럭 인덱스 — 이 조합이 60% 이상 등장하도록 사용 */
 const RECT_BLOCK_INDICES = [9, 10, 11]; // 3×2, 2×3, 3×3
+const SHAPE_3X3 = 11;
+const SHAPE_3X2 = 9;
+const SHAPE_2X3 = 10;
 
 function createRandomPiece(useBoardAware = true) {
   const rectBlockChance = 0.6; // 3×3, 3×2, 2×3 등장 비율 60%
@@ -719,11 +732,23 @@ function createRandomPiece(useBoardAware = true) {
 }
 
 function generatePieces() {
-  activePieces = [
-    createRandomPiece(true),
-    createRandomPiece(true),
-    createRandomPiece(true),
-  ];
+  if (isBoardClear()) {
+    // 클리어 상태: 3×3 2개 100%, 3×2 또는 2×3 각 80% 확률(나머지 20% 랜덤)
+    const third = Math.random() < 0.8
+      ? SHAPES[Math.random() < 0.5 ? SHAPE_3X2 : SHAPE_2X3].map((row) => row.slice())
+      : createRandomPiece(true);
+    activePieces = [
+      SHAPES[SHAPE_3X3].map((row) => row.slice()),
+      SHAPES[SHAPE_3X3].map((row) => row.slice()),
+      third,
+    ];
+  } else {
+    activePieces = [
+      createRandomPiece(true),
+      createRandomPiece(true),
+      createRandomPiece(true),
+    ];
+  }
   activeVariants = activePieces.map(() => {
     if (feverModeActive) return METAL_TYPES.GOLD_24K;
     return Math.floor(Math.random() * GOLD_VARIANT_COUNT);
