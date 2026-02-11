@@ -750,7 +750,7 @@ function generatePieces() {
       ? SHAPES[Math.random() < 0.5 ? SHAPE_3X2 : SHAPE_2X3].map((row) => row.slice())
       : createRandomPiece(true);
     const threeByThree = SHAPES[SHAPE_3X3].map((row) => row.slice());
-    while (shapesEqual(third, threeByThree)) {
+    for (let retry = 0; retry < 50 && shapesEqual(third, threeByThree); retry++) {
       third = createRandomPiece(true);
     }
     activePieces = [
@@ -764,8 +764,8 @@ function generatePieces() {
       createRandomPiece(true),
       createRandomPiece(true),
     ];
-    // 같은 블럭 3개 방지: 모두 동일하면 셋째만 다시 뽑기
-    while (shapesEqual(activePieces[0], activePieces[1]) && shapesEqual(activePieces[1], activePieces[2])) {
+    // 같은 블럭 3개 방지: 모두 동일하면 셋째만 다시 뽑기 (무한루프 방지: 최대 50회)
+    for (let retry = 0; retry < 50 && shapesEqual(activePieces[0], activePieces[1]) && shapesEqual(activePieces[1], activePieces[2]); retry++) {
       activePieces[2] = createRandomPiece(true);
     }
   }
