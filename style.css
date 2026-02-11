@@ -381,6 +381,9 @@ body {
 
 .combo-popup {
   position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.3);
   font-size: clamp(3rem, 9vw, 5rem);
   font-weight: 800;
   color: #fef08a;
@@ -388,7 +391,6 @@ body {
     0 0 24px rgba(250, 204, 21, 0.9),
     0 0 48px rgba(251, 191, 36, 0.6);
   opacity: 0;
-  transform: scale(0.3);
   transition: none;
 }
 .combo-popup.combo-popup-visible {
@@ -435,19 +437,19 @@ body {
 @keyframes comboPop {
   0% {
     opacity: 0;
-    transform: scale(0.3);
+    transform: translate(-50%, -50%) scale(0.3);
   }
   25% {
     opacity: 1;
-    transform: scale(1.4);
+    transform: translate(-50%, -50%) scale(1.4);
   }
   50% {
     opacity: 1;
-    transform: scale(1.25);
+    transform: translate(-50%, -50%) scale(1.25);
   }
   100% {
     opacity: 0;
-    transform: scale(1.35) translateY(-50px);
+    transform: translate(-50%, calc(-50% - 50px)) scale(1.35);
   }
 }
 
@@ -1047,17 +1049,32 @@ body {
 }
 
 .ghost-piece {
-  position: fixed;
   pointer-events: none;
-  display: inline-grid;
-  gap: 4px;
-  padding: 10px;
-  border-radius: 10px;
-  background: rgba(212, 168, 75, 0.2);
-  border: 1px solid rgba(212, 168, 75, 0.6);
-  box-shadow: 0 10px 24px rgba(212, 168, 75, 0.35);
-  transform: translate(-50%, -50%);
-  z-index: 100;
+  display: grid;
+  z-index: 15;
+}
+
+.ghost-piece-on-board {
+  position: absolute;
+  border-radius: 4px;
+  background: rgba(212, 168, 75, 0.25);
+  border: 2px solid rgba(212, 168, 75, 0.7);
+  box-shadow: 0 0 12px rgba(212, 168, 75, 0.4);
+}
+
+.ghost-piece-on-board .piece-cell {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  box-sizing: border-box;
+}
+
+.ghost-piece-on-board .piece-empty {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
 }
 
 .piece-cell {

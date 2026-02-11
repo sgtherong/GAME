@@ -923,8 +923,14 @@ function placeShape(shape, baseRow, baseCol, variant) {
     screenShake();
     scoreFlash();
     floatScorePopup(totalGain);
-    showExclamationPopup(cleared, currentCombo);
-    if (currentCombo >= 2) showComboPopup(currentCombo);
+    // 여러 팝업 동시 노출 방지: 우선순위에 따라 하나만 표시
+    if (isFullClear) {
+      // 풀 클리어 시 CLEAR BOARD!만 표시 (위에서 이미 추가됨)
+    } else if (currentCombo >= 2) {
+      showComboPopup(currentCombo);
+    } else {
+      showExclamationPopup(cleared, currentCombo);
+    }
     gainText = currentCombo >= 2
       ? `+${finalScore.toLocaleString()} pts (${cleared} line(s) · combo ${currentCombo}x!)`
       : `+${finalScore.toLocaleString()} pts (${cleared} line clear!)`;
@@ -1214,12 +1220,11 @@ function applyPreview(shape, baseRow, baseCol, isValid) {
   }
 }
 
-function createGhostPiece(shape, startX, startY) {
+function createGhostPiece(shape) {
   const ghost = document.createElement('div');
-  ghost.className = 'ghost-piece';
+  ghost.className = 'ghost-piece ghost-piece-on-board';
   const rows = shape.length;
   const cols = shape[0].length;
-  ghost.style.gridTemplateColumns = `repeat(${cols}, auto)`;
 
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
@@ -1229,17 +1234,13 @@ function createGhostPiece(shape, startX, startY) {
         ghost.appendChild(cell);
       } else {
         const empty = document.createElement('div');
-        empty.style.width = '20px';
-        empty.style.height = '20px';
+        empty.className = 'piece-empty';
         ghost.appendChild(empty);
       }
     }
   }
 
-  const { w: ghostW, h: ghostH } = getGhostSize(rows, cols);
-  document.body.appendChild(ghost);
-  ghost.style.left = `${startX - ghostW / 2}px`;
-  ghost.style.top = `${startY - DRAG_GHOST_OFFSET_Y - ghostH}px`;
+  if (boardWrap) boardWrap.appendChild(ghost);
   return ghost;
 }
 
@@ -1260,11 +1261,12 @@ function onPieceMouseDown(e) {
     shape,
     offsetX,
     offsetY,
-    ghost: createGhostPiece(shape, e.clientX, e.clientY),
+    ghost: createGhostPiece(shape),
   };
 
   piece.classList.add('dragging');
 
+  updateGhostPosition(e.clientX, e.clientY);
   window.addEventListener('mousemove', onMouseMove);
   window.addEventListener('mouseup', onMouseUp);
 }
@@ -1287,17 +1289,17 @@ function onPieceTouchStart(e) {
     shape,
     offsetX,
     offsetY,
-    ghost: createGhostPiece(shape, touch.clientX, touch.clientY),
+    ghost: createGhostPiece(shape),
   };
 
   piece.classList.add('dragging');
 
+  updateGhostPosition(touch.clientX, touch.clientY);
   window.addEventListener('touchmove', onTouchMove, { passive: false });
   window.addEventListener('touchend', onTouchEnd);
   window.addEventListener('touchcancel', onTouchCancel);
 }
 
-const DRAG_GHOST_OFFSET_Y = 100; // 고스트 블럭이 커서 위 100px에 위치
 const GHOST_CELL = 18;
 const GHOST_GAP = 4;
 const GHOST_PAD = 10;
@@ -1309,12 +1311,19 @@ function getGhostSize(shapeRows, shapeCols) {
   };
 }
 
-/** 커서 기준점: 블럭의 중간 아래(고스트는 커서 위 100px). 반환값은 보드 셀 계산용 고스트 하단·좌측 픽셀 위치 */
+/** 보드 셀 크기 (getBoardCellFromPoint와 동일) */
+function getBoardCellSize() {
+  const rect = boardEl.getBoundingClientRect();
+  return rect.width / BOARD_SIZE;
+}
+
+/** 커서=블럭 중간 아래. 보드 셀 계산용 고스트 하단·좌측 픽셀 위치 */
 function getGhostBottomLeft(clientX, clientY, shapeRows, shapeCols) {
-  const { w: ghostW } = getGhostSize(shapeRows, shapeCols);
+  const cellSize = getBoardCellSize();
+  const ghostW = shapeCols * cellSize;
   return {
     x: clientX - ghostW / 2,
-    y: clientY - DRAG_GHOST_OFFSET_Y,
+    y: clientY,
   };
 }
 
@@ -1322,13 +1331,11 @@ function updateGhostPosition(clientX, clientY) {
   if (!dragging || !dragging.ghost) return;
   const rows = dragging.shape.length;
   const cols = dragging.shape[0].length;
-  const { w: ghostW, h: ghostH } = getGhostSize(rows, cols);
-  dragging.ghost.style.left = `${clientX - ghostW / 2}px`;
-  dragging.ghost.style.top = `${clientY - DRAG_GHOST_OFFSET_Y - ghostH}px`;
 
   const bottomLeft = getGhostBottomLeft(clientX, clientY, rows, cols);
   const cellPos = getBoardCellFromPoint(bottomLeft.x, bottomLeft.y);
   if (!cellPos) {
+    dragging.ghost.style.visibility = 'hidden';
     clearPreview();
     return;
   }
@@ -1336,9 +1343,26 @@ function updateGhostPosition(clientX, clientY) {
   const baseRow = cellPos.row - (rows - 1);
   const baseCol = cellPos.col;
   if (baseRow < 0) {
+    dragging.ghost.style.visibility = 'hidden';
     clearPreview();
     return;
   }
+
+  const boardRect = boardEl.getBoundingClientRect();
+  const wrapRect = boardWrap ? boardWrap.getBoundingClientRect() : boardRect;
+  const pad = 8;
+  const cellSize = (boardRect.width - pad * 2) / BOARD_SIZE;
+
+  dragging.ghost.style.visibility = 'visible';
+  dragging.ghost.style.left = `${boardRect.left - wrapRect.left + pad + baseCol * cellSize}px`;
+  dragging.ghost.style.top = `${boardRect.top - wrapRect.top + pad + baseRow * cellSize}px`;
+  dragging.ghost.style.gridTemplateColumns = `repeat(${cols}, ${cellSize}px)`;
+  dragging.ghost.style.gridTemplateRows = `repeat(${rows}, ${cellSize}px)`;
+  dragging.ghost.style.gap = '0';
+  dragging.ghost.style.padding = '0';
+  dragging.ghost.style.width = `${cols * cellSize}px`;
+  dragging.ghost.style.height = `${rows * cellSize}px`;
+
   const isValid = canPlace(dragging.shape, baseRow, baseCol);
   applyPreview(dragging.shape, baseRow, baseCol, isValid);
 }
