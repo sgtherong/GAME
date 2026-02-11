@@ -680,24 +680,42 @@ function floatScorePopup(points) {
   setTimeout(() => pop.remove(), 800);
 }
 
+/** 3×3, 3×2, 2×3 블럭 인덱스 — 이 조합이 60% 이상 등장하도록 사용 */
+const RECT_BLOCK_INDICES = [9, 10, 11]; // 3×2, 2×3, 3×3
+
 function createRandomPiece(useBoardAware = true) {
-  const weights = useBoardAware ? getBoardAwareWeights() : SHAPE_WEIGHTS;
-  const totalWeight = weights.reduce((s, w) => s + w, 0);
-  if (totalWeight <= 0) {
-    const index = Math.floor(Math.random() * SHAPES.length);
-    return SHAPES[index].map((row) => row.slice());
-  }
-  let r = Math.random() * totalWeight;
-  let index = 0;
-  for (let i = 0; i < weights.length; i++) {
-    r -= weights[i];
-    if (r <= 0) {
-      index = i;
-      break;
+  const rectBlockChance = 0.6; // 3×3, 3×2, 2×3 등장 비율 60%
+  const weights = useBoardAware ? getPlacementWeights() : SHAPE_WEIGHTS.slice();
+
+  const rectTotal = RECT_BLOCK_INDICES.reduce((s, i) => s + weights[i], 0);
+  const restWeights = weights.slice();
+  RECT_BLOCK_INDICES.forEach((i) => { restWeights[i] = 0; });
+  const restTotal = restWeights.reduce((s, w) => s + w, 0);
+
+  const useRectPool = rectTotal > 0 && (restTotal === 0 || Math.random() < rectBlockChance);
+  const useRestPool = restTotal > 0 && !useRectPool;
+
+  let index;
+  if (useRectPool) {
+    let r = Math.random() * rectTotal;
+    for (const i of RECT_BLOCK_INDICES) {
+      r -= weights[i];
+      if (r <= 0) { index = i; break; }
     }
+    if (index === undefined) index = RECT_BLOCK_INDICES[RECT_BLOCK_INDICES.length - 1];
+  } else if (useRestPool) {
+    let r = Math.random() * restTotal;
+    index = restWeights.findIndex((w) => w > 0);
+    for (let i = 0; i < restWeights.length; i++) {
+      r -= restWeights[i];
+      if (r <= 0) { index = i; break; }
+    }
+  } else {
+    const pool = rectTotal > 0 ? RECT_BLOCK_INDICES : SHAPES.map((_, i) => i).filter((i) => !RECT_BLOCK_INDICES.includes(i));
+    index = pool[Math.floor(Math.random() * pool.length)];
   }
-  const shape = SHAPES[index];
-  return shape.map((row) => row.slice());
+
+  return SHAPES[index].map((row) => row.slice());
 }
 
 function generatePieces() {
@@ -805,35 +823,14 @@ function countValidPlacements(shape) {
   return count;
 }
 
-/** 보드 상황에 맞는 블럭 가중치: 점수 구간별 카테고리 확률 + 공간 맞춤 적용 */
+/** 보드 남은 자리 기준 가중치: 각 블럭을 놓을 수 있는 위치 개수 (0이면 등장 안 함) */
+function getPlacementWeights() {
+  return SHAPES.map((_, i) => countValidPlacements(SHAPES[i]));
+}
+
+/** 보드 상황에 맞는 블럭 가중치: 보드판 남은 자리에 맞춰 배치 가능 개수로 확률 결정 */
 function getBoardAwareWeights() {
-  const probs = getCategoryProbabilities(score);
-  const baseWeights = SHAPE_WEIGHTS.slice();
-  const categoryWeights = { simple: 0, complex: 0, large: 0 };
-  
-  SHAPE_CATEGORIES.SIMPLE.forEach((i) => { categoryWeights.simple += baseWeights[i]; });
-  SHAPE_CATEGORIES.COMPLEX.forEach((i) => { categoryWeights.complex += baseWeights[i]; });
-  SHAPE_CATEGORIES.LARGE.forEach((i) => { categoryWeights.large += baseWeights[i]; });
-  
-  const totalCategoryWeight = categoryWeights.simple + categoryWeights.complex + categoryWeights.large;
-  const spaceFitMultiplier = probs.spaceFit / (1 - probs.spaceFit);
-  
-  return SHAPE_WEIGHTS.map((base, i) => {
-    const placements = countValidPlacements(SHAPES[i]);
-    if (placements === 0) return 0;
-    
-    let categoryMultiplier = 1;
-    if (SHAPE_CATEGORIES.SIMPLE.includes(i)) {
-      categoryMultiplier = (probs.simple * totalCategoryWeight) / categoryWeights.simple;
-    } else if (SHAPE_CATEGORIES.COMPLEX.includes(i)) {
-      categoryMultiplier = (probs.complex * totalCategoryWeight) / categoryWeights.complex;
-    } else if (SHAPE_CATEGORIES.LARGE.includes(i)) {
-      categoryMultiplier = (probs.large * totalCategoryWeight) / categoryWeights.large;
-    }
-    
-    const spaceFitBoost = placements > 0 ? (1 + spaceFitMultiplier * Math.min(placements / 10, 1)) : 1;
-    return base * categoryMultiplier * spaceFitBoost * (1 + placements * 0.1);
-  });
+  return getPlacementWeights();
 }
 
 function placeShape(shape, baseRow, baseCol, variant) {
@@ -1214,9 +1211,10 @@ function createGhostPiece(shape, startX, startY) {
     }
   }
 
+  const { w: ghostW, h: ghostH } = getGhostSize(rows, cols);
   document.body.appendChild(ghost);
-  ghost.style.left = `${startX}px`;
-  ghost.style.top = `${startY - DRAG_GHOST_OFFSET_Y}px`;
+  ghost.style.left = `${startX - ghostW / 2}px`;
+  ghost.style.top = `${startY - DRAG_GHOST_OFFSET_Y - ghostH}px`;
   return ghost;
 }
 
@@ -1274,29 +1272,35 @@ function onPieceTouchStart(e) {
   window.addEventListener('touchcancel', onTouchCancel);
 }
 
-const DRAG_GHOST_OFFSET_Y = 100;
+const DRAG_GHOST_OFFSET_Y = 100; // 고스트 블럭이 커서 위 100px에 위치
 const GHOST_CELL = 18;
 const GHOST_GAP = 4;
 const GHOST_PAD = 10;
 
+function getGhostSize(shapeRows, shapeCols) {
+  return {
+    w: GHOST_PAD * 2 + shapeCols * GHOST_CELL + (shapeCols - 1) * GHOST_GAP,
+    h: GHOST_PAD * 2 + shapeRows * GHOST_CELL + (shapeRows - 1) * GHOST_GAP,
+  };
+}
+
+/** 커서 기준점: 블럭의 중간 아래(고스트는 커서 위 100px). 반환값은 보드 셀 계산용 고스트 하단·좌측 픽셀 위치 */
 function getGhostBottomLeft(clientX, clientY, shapeRows, shapeCols) {
-  const ghostY = clientY - DRAG_GHOST_OFFSET_Y;
-  const ghostW = GHOST_PAD * 2 + shapeCols * GHOST_CELL + (shapeCols - 1) * GHOST_GAP;
-  const ghostH = GHOST_PAD * 2 + shapeRows * GHOST_CELL + (shapeRows - 1) * GHOST_GAP;
+  const { w: ghostW } = getGhostSize(shapeRows, shapeCols);
   return {
     x: clientX - ghostW / 2,
-    y: ghostY + ghostH / 2,
+    y: clientY - DRAG_GHOST_OFFSET_Y,
   };
 }
 
 function updateGhostPosition(clientX, clientY) {
   if (!dragging || !dragging.ghost) return;
-  const ghostY = clientY - DRAG_GHOST_OFFSET_Y;
-  dragging.ghost.style.left = `${clientX}px`;
-  dragging.ghost.style.top = `${ghostY}px`;
-
   const rows = dragging.shape.length;
   const cols = dragging.shape[0].length;
+  const { w: ghostW, h: ghostH } = getGhostSize(rows, cols);
+  dragging.ghost.style.left = `${clientX - ghostW / 2}px`;
+  dragging.ghost.style.top = `${clientY - DRAG_GHOST_OFFSET_Y - ghostH}px`;
+
   const bottomLeft = getGhostBottomLeft(clientX, clientY, rows, cols);
   const cellPos = getBoardCellFromPoint(bottomLeft.x, bottomLeft.y);
   if (!cellPos) {
