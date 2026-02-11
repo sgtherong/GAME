@@ -1755,6 +1755,73 @@ const ITEM_NAMES = {
   tax: 'Tax Break',
 };
 
+/** 아이템 사용 시 화려한 이펙트: 팝업 + 폭죽 + 보드 플래시 */
+function showItemEffect(itemType) {
+  const labels = {
+    midas: 'MIDAS TOUCH!',
+    launder: 'MONEY LAUNDER!',
+    hammer: 'GOLDEN HAMMER!',
+    tax: 'TAX BREAK!',
+  };
+  const label = labels[itemType] || 'ITEM USED!';
+
+  const overlay = document.createElement('div');
+  overlay.className = 'item-effect-overlay';
+  overlay.setAttribute('aria-hidden', 'true');
+
+  const pop = document.createElement('div');
+  pop.className = 'item-effect-popup';
+  pop.textContent = label;
+  overlay.appendChild(pop);
+
+  const burstCount = 5;
+  const particleCount = 12;
+  const colors = ['#fef08a', '#facc15', '#fb923c', '#f97316', '#fbbf24', '#fde047', '#a3e635', '#22d3ee'];
+
+  for (let b = 0; b < burstCount; b++) {
+    const burst = document.createElement('div');
+    burst.className = 'firework-burst';
+    burst.style.left = (30 + Math.random() * 40) + '%';
+    burst.style.top = (25 + Math.random() * 50) + '%';
+    burst.style.animationDelay = (b * 80 + Math.random() * 40) + 'ms';
+
+    for (let i = 0; i < particleCount; i++) {
+      const angle = (Math.PI * 2 * i) / particleCount + Math.random() * 0.6;
+      const dist = 60 + Math.random() * 80;
+      const tx = Math.cos(angle) * dist;
+      const ty = Math.sin(angle) * dist;
+      const col = colors[b % colors.length];
+      const p = document.createElement('div');
+      p.className = 'firework-particle';
+      p.style.setProperty('--tx', tx + 'px');
+      p.style.setProperty('--ty', ty + 'px');
+      p.style.background = col;
+      p.style.color = col;
+      burst.appendChild(p);
+    }
+    overlay.appendChild(burst);
+  }
+
+  document.body.appendChild(overlay);
+  requestAnimationFrame(() => {
+    overlay.classList.add('item-effect-overlay-visible');
+    pop.classList.add('item-effect-popup-visible');
+  });
+
+  if (boardWrap) {
+    boardWrap.classList.remove('board-flash', 'board-shake');
+    void boardWrap.offsetWidth;
+    boardWrap.classList.add('board-flash');
+    boardWrap.classList.add('board-shake');
+    setTimeout(() => {
+      boardWrap.classList.remove('board-flash');
+    }, 520);
+    setTimeout(() => boardWrap.classList.remove('board-shake'), 300);
+  }
+
+  setTimeout(() => overlay.remove(), 2200);
+}
+
 function handleItemUse(itemType) {
   if (items[itemType] <= 0) return;
   const itemName = ITEM_NAMES[itemType] || itemType;
@@ -1775,8 +1842,9 @@ function handleItemUse(itemType) {
       break;
   }
   if (used) {
-    updateItemDisplays();
     closeItemModal();
+    showItemEffect(itemType);
+    updateItemDisplays();
   }
 }
 

@@ -536,6 +536,80 @@ body {
   50% { background-position: 100% 50%; }
 }
 
+/* 아이템 사용 이펙트 */
+.item-effect-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 180;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(ellipse at center, rgba(254, 240, 138, 0.15) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.3s ease-out;
+}
+.item-effect-overlay.item-effect-overlay-visible {
+  opacity: 1;
+  animation: itemOverlayPulse 1.2s ease-out;
+}
+
+.item-effect-popup {
+  position: absolute;
+  top: 35%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.5);
+  font-size: clamp(2.5rem, 7vw, 4rem);
+  font-weight: 900;
+  color: #fef08a;
+  text-shadow:
+    0 0 20px rgba(250, 204, 21, 1),
+    0 0 40px rgba(251, 191, 36, 0.9),
+    0 0 60px rgba(245, 158, 11, 0.7);
+  white-space: nowrap;
+  letter-spacing: 0.12em;
+  opacity: 0;
+  z-index: 2;
+}
+.item-effect-popup.item-effect-popup-visible {
+  animation: itemPopupBurst 1.8s ease-out forwards;
+}
+
+@keyframes itemOverlayPulse {
+  0% {
+    background: radial-gradient(ellipse at center, rgba(254, 240, 138, 0.25) 0%, transparent 60%);
+  }
+  30% {
+    background: radial-gradient(ellipse at center, rgba(254, 249, 195, 0.35) 0%, transparent 65%);
+  }
+  100% {
+    background: radial-gradient(ellipse at center, rgba(254, 240, 138, 0) 0%, transparent 70%);
+  }
+}
+
+@keyframes itemPopupBurst {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.3);
+  }
+  15% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.25);
+  }
+  30% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.1);
+  }
+  70% {
+    opacity: 1;
+    transform: translate(-50%, calc(-50% - 20px)) scale(1.05);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, calc(-50% - 60px)) scale(1);
+  }
+}
+
 /* 전체 클리어: 화면 전체 폭죽 */
 .fireworks-overlay {
   position: fixed;
