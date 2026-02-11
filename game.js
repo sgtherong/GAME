@@ -566,12 +566,31 @@ function updateFeverGauge(comboCount) {
   }
 }
 
+let feverOverlayEl = null;
+
 /** 피버 모드 활성화 (골든 아워) */
 function activateFeverMode() {
   feverModeActive = true;
   feverGauge = 100;
   if (feverGaugeEl) feverGaugeEl.style.width = '100%';
   if (boardWrap) boardWrap.classList.add('fever-active');
+  document.body.classList.add('fever-mode');
+
+  const overlay = document.createElement('div');
+  overlay.className = 'fever-golden-overlay';
+  overlay.setAttribute('aria-hidden', 'true');
+  const sparkleCount = 40;
+  for (let i = 0; i < sparkleCount; i++) {
+    const s = document.createElement('div');
+    s.className = 'fever-sparkle';
+    s.style.left = Math.random() * 100 + '%';
+    s.style.top = Math.random() * 100 + '%';
+    s.style.animationDelay = Math.random() * 1.5 + 's';
+    s.style.animationDuration = (0.8 + Math.random() * 0.8) + 's';
+    overlay.appendChild(s);
+  }
+  document.body.appendChild(overlay);
+  feverOverlayEl = overlay;
   currentCombo = 0;
   if (comboTimer) {
     clearInterval(comboTimer);
@@ -597,6 +616,11 @@ function deactivateFeverMode() {
   feverGauge = 0;
   if (feverGaugeEl) feverGaugeEl.style.width = '0%';
   if (boardWrap) boardWrap.classList.remove('fever-active');
+  document.body.classList.remove('fever-mode');
+  if (feverOverlayEl && feverOverlayEl.parentNode) {
+    feverOverlayEl.parentNode.removeChild(feverOverlayEl);
+    feverOverlayEl = null;
+  }
   if (feverModeTimer) {
     clearTimeout(feverModeTimer);
     feverModeTimer = null;
@@ -916,7 +940,9 @@ function placeShape(shape, baseRow, baseCol, variant) {
     currentCombo++;
     totalLines += cleared;
     startComboTimer();
-    
+
+    const grantedItemName = currentCombo === 3 ? grantRandomItem() : null;
+
     const baseScore = blockScore + clearedBlockScore;
     const comboMultiplier = getComboMultiplier(currentCombo);
     let finalScore = Math.floor(baseScore * comboMultiplier);
@@ -954,9 +980,8 @@ function placeShape(shape, baseRow, baseCol, variant) {
     gainText = currentCombo >= 2
       ? `+${finalScore.toLocaleString()} pts (${cleared} line(s) · combo ${currentCombo}x!)`
       : `+${finalScore.toLocaleString()} pts (${cleared} line clear!)`;
-    if (isFullClear) {
-      gainText += ` + Clear Board Bonus!`;
-    }
+    if (isFullClear) gainText += ` + Clear Board Bonus!`;
+    if (grantedItemName) gainText += ` +1 ${grantedItemName}!`;
   } else {
     if (comboTimeLeft <= 0) {
       currentCombo = 0;
@@ -1602,6 +1627,11 @@ function resetGame() {
   if (boardWrap) {
     boardWrap.classList.remove('board-rainbow', 'fever-active');
   }
+  document.body.classList.remove('fever-mode');
+  if (feverOverlayEl && feverOverlayEl.parentNode) {
+    feverOverlayEl.parentNode.removeChild(feverOverlayEl);
+    feverOverlayEl = null;
+  }
   updateScoreDisplays('');
   updateRank();
   if (effectLayer) effectLayer.innerHTML = '';
@@ -1754,6 +1784,16 @@ const ITEM_NAMES = {
   hammer: 'Golden Hammer',
   tax: 'Tax Break',
 };
+
+const ITEM_TYPES = ['midas', 'launder', 'hammer', 'tax'];
+
+function grantRandomItem() {
+  const itemType = ITEM_TYPES[Math.floor(Math.random() * ITEM_TYPES.length)];
+  items[itemType]++;
+  saveItems();
+  updateItemDisplays();
+  return ITEM_NAMES[itemType];
+}
 
 /** 아이템 사용 시 화려한 이펙트: 팝업 + 폭죽 + 보드 플래시 */
 function showItemEffect(itemType) {
