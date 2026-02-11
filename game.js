@@ -1427,7 +1427,7 @@ function removeDragListeners() {
 function cleanupDrag() {
   if (!dragging) return;
   const { pieceIndex, ghost } = dragging;
-  const pieceEl = piecesEl.querySelector(`.piece[data-index="${pieceIndex}"]`);
+  const pieceEl = piecesEl?.querySelector(`.piece[data-index="${pieceIndex}"]`);
   if (pieceEl) {
     pieceEl.classList.remove('dragging');
     const wr = pieceEl.closest('.piece-wrapper');
@@ -1443,7 +1443,7 @@ function finishDrag(clientX, clientY) {
   if (!dragging) return;
 
   const { pieceIndex, shape } = dragging;
-  const pieceEl = piecesEl.querySelector(`.piece[data-index="${pieceIndex}"]`);
+  const pieceEl = piecesEl?.querySelector(`.piece[data-index="${pieceIndex}"]`);
 
   const rows = shape.length;
   const cols = shape[0].length;
@@ -1506,8 +1506,8 @@ function onMouseUp(e) {
 
 function onTouchMove(e) {
   e.preventDefault();
-  const touch = e.touches[0];
-  updateGhostPosition(touch.clientX, touch.clientY);
+  const touch = e.touches && e.touches[0];
+  if (touch) updateGhostPosition(touch.clientX, touch.clientY);
 }
 
 function onTouchEnd(e) {
