@@ -340,7 +340,7 @@ body.fever-mode .app {
   top: 30%;
   left: 50%;
   transform: translate(-50%, 0) scale(0.5);
-  font-size: clamp(3.5rem, 10vw, 5.2rem);
+  font-size: clamp(1rem, 5vmin, 2.2rem);
   font-weight: 900;
   color: #fef08a;
   text-shadow:
@@ -363,15 +363,15 @@ body.fever-mode .app {
   }
   15% {
     opacity: 1;
-    transform: translate(-50%, -10px) scale(1.3);
+    transform: translate(-50%, -4px) scale(1.15);
   }
   30% {
     opacity: 1;
-    transform: translate(-50%, -20px) scale(1.2);
+    transform: translate(-50%, -8px) scale(1.1);
   }
   100% {
     opacity: 0;
-    transform: translate(-50%, -80px) scale(1.1);
+    transform: translate(-50%, -24px) scale(1.05);
   }
 }
 
@@ -380,7 +380,7 @@ body.fever-mode .app {
   top: 25%;
   left: 50%;
   transform: translate(-50%, 0) scale(0.5);
-  font-size: clamp(3rem, 9vw, 4.5rem);
+  font-size: clamp(1rem, 5vmin, 2.2rem);
   font-weight: 900;
   color: #fef08a;
   text-shadow:
@@ -403,15 +403,15 @@ body.fever-mode .app {
   }
   20% {
     opacity: 1;
-    transform: translate(-50%, -15px) scale(1.2);
+    transform: translate(-50%, -6px) scale(1.15);
   }
   40% {
     opacity: 1;
-    transform: translate(-50%, -30px) scale(1.15);
+    transform: translate(-50%, -12px) scale(1.1);
   }
   100% {
     opacity: 0;
-    transform: translate(-50%, -90px) scale(1.05);
+    transform: translate(-50%, -24px) scale(1.05);
   }
 }
 
@@ -432,7 +432,7 @@ body.fever-mode .app {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  overflow: visible;
+  overflow: hidden;
   border-radius: 18px;
   z-index: 10;
   display: flex;
@@ -445,7 +445,7 @@ body.fever-mode .app {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%) scale(0.3);
-  font-size: clamp(3rem, 9vw, 5rem);
+  font-size: clamp(1rem, 5vmin, 2.2rem);
   font-weight: 800;
   color: #fef08a;
   text-shadow:
@@ -460,10 +460,10 @@ body.fever-mode .app {
 
 .exclamation-popup {
   position: absolute;
-  top: 22%;
+  top: 25%;
   left: 50%;
   transform: translate(-50%, 0) scale(0.5);
-  font-size: clamp(3.3rem, 9vw, 4.8rem);
+  font-size: clamp(1rem, 5vmin, 2.2rem);
   font-weight: 800;
   color: #fcd34d;
   text-shadow:
@@ -483,15 +483,15 @@ body.fever-mode .app {
   }
   20% {
     opacity: 1;
-    transform: translate(-50%, -10px) scale(1.5);
+    transform: translate(-50%, -4px) scale(1.15);
   }
   70% {
     opacity: 1;
-    transform: translate(-50%, -30px) scale(1.35);
+    transform: translate(-50%, -12px) scale(1.1);
   }
   100% {
     opacity: 0;
-    transform: translate(-50%, -80px) scale(1.2);
+    transform: translate(-50%, -24px) scale(1.05);
   }
 }
 
@@ -502,15 +502,15 @@ body.fever-mode .app {
   }
   25% {
     opacity: 1;
-    transform: translate(-50%, -50%) scale(1.4);
+    transform: translate(-50%, -50%) scale(1.15);
   }
   50% {
     opacity: 1;
-    transform: translate(-50%, -50%) scale(1.25);
+    transform: translate(-50%, -50%) scale(1.08);
   }
   100% {
     opacity: 0;
-    transform: translate(-50%, calc(-50% - 50px)) scale(1.35);
+    transform: translate(-50%, calc(-50% - 16px)) scale(1.05);
   }
 }
 

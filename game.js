@@ -376,7 +376,13 @@ function loadItems() {
     const stored = localStorage.getItem(ITEM_STORAGE_KEY);
     if (stored) {
       const parsed = JSON.parse(stored);
-      items = { ...items, ...parsed };
+      const sanitize = (v) => Math.max(0, parseInt(v, 10) || 0);
+      items = {
+        midas: sanitize(parsed.midas),
+        launder: sanitize(parsed.launder),
+        hammer: sanitize(parsed.hammer),
+        tax: sanitize(parsed.tax),
+      };
     } else {
       items = { midas: 1, launder: 2, hammer: 1, tax: 1 };
       saveItems();
@@ -1946,6 +1952,7 @@ function showItemEffect(itemType) {
 }
 
 function handleItemUse(itemType) {
+  if (!itemType || !ITEM_TYPES.includes(itemType)) return;
   if (items[itemType] <= 0) return;
   const itemName = ITEM_NAMES[itemType] || itemType;
   if (!confirm(`Use ${itemName}?`)) return;
@@ -1963,11 +1970,12 @@ function handleItemUse(itemType) {
     case 'tax':
       used = useTaxBreak();
       break;
+    default:
+      return;
   }
   if (used) {
     closeItemModal();
     showItemEffect(itemType);
-    /* updateItemDisplays는 각 use* 함수 내부에서 이미 호출됨 */
   }
 }
 
@@ -2000,6 +2008,7 @@ document.getElementById('itemBar')?.addEventListener('click', (e) => {
   const slot = e.target.closest('.item-slot');
   if (!slot || slot.disabled) return;
   const itemType = slot.dataset.item;
+  if (!itemType) return;
   handleItemUse(itemType);
 });
 if (closeItemModalBtn) {
