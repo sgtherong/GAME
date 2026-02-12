@@ -145,7 +145,7 @@ body {
   font-weight: 700;
   min-width: 0;
   text-align: center;
-  tabular-nums: 1;
+  font-variant-numeric: tabular-nums;
   overflow: visible;
   text-overflow: clip;
 }
@@ -595,6 +595,74 @@ body.fever-mode .app {
 @keyframes rainbowShift {
   0%, 100% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
+}
+
+/* 보드 위 아이템 아이콘 (크게 표시) */
+.item-effect-icon {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%) scale(0.3);
+  font-size: clamp(4rem, 12vw, 8rem);
+  line-height: 1;
+  filter: drop-shadow(0 0 20px rgba(250, 204, 21, 0.9))
+    drop-shadow(0 0 40px rgba(251, 191, 36, 0.6))
+    drop-shadow(0 0 60px rgba(245, 158, 11, 0.4));
+  opacity: 0;
+  transition: transform 0.25s ease-out, opacity 0.25s ease-out;
+  z-index: 20;
+}
+.item-effect-icon.item-effect-icon-visible {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1.1);
+  animation: itemIconPulse 1.2s ease-out;
+}
+@keyframes itemIconPulse {
+  0% {
+    transform: translate(-50%, -50%) scale(0.5);
+    opacity: 0.5;
+  }
+  20% {
+    transform: translate(-50%, -50%) scale(1.2);
+    opacity: 1;
+  }
+  40% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.2);
+    opacity: 0;
+  }
+}
+
+/* 아이템 폭발 파티클 강화 */
+.clear-particle.item-explosion-particle {
+  width: 12px;
+  height: 12px;
+  animation: particleFlyExplode 0.5s ease-out forwards;
+}
+.clear-particle.item-explosion-particle.spark {
+  width: 8px;
+  height: 8px;
+}
+.clear-particle.item-explosion-particle.flare {
+  width: 6px;
+  height: 6px;
+}
+@keyframes particleFlyExplode {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+  15% {
+    transform: translate(calc(-50% + var(--dx) * 0.4), calc(-50% + var(--dy) * 0.4)) scale(1.3);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(0);
+    opacity: 0;
+  }
 }
 
 /* 아이템 사용 이펙트 */

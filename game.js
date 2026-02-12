@@ -1,4 +1,5 @@
 const BOARD_SIZE = 8;
+const BOARD_PAD = 8; // 보드 padding (style.css .board와 동기화)
 const LOCAL_STORAGE_KEY = 'blockblast-best-score';
 
 /** 간단한 블록 패턴들 (1은 블록, 0은 빈 칸). 1칸 블록 제외
@@ -743,10 +744,12 @@ function createRandomPiece(useBoardAware = true) {
     if (index === undefined) index = RECT_BLOCK_INDICES[RECT_BLOCK_INDICES.length - 1];
   } else if (useRestPool) {
     let r = Math.random() * restTotal;
-    index = restWeights.findIndex((w) => w > 0);
+    index = 0; // fallback
     for (let i = 0; i < restWeights.length; i++) {
+      if (restWeights[i] <= 0) continue;
       r -= restWeights[i];
-      if (r <= 0) { index = i; break; }
+      index = i;
+      if (r <= 0) break;
     }
   } else {
     const pool = rectTotal > 0 ? RECT_BLOCK_INDICES : SHAPES.map((_, i) => i).filter((i) => !RECT_BLOCK_INDICES.includes(i));
@@ -849,11 +852,9 @@ function renderPieces() {
 function getBoardCellFromPoint(x, y) {
   if (!boardEl) return null;
   const rect = boardEl.getBoundingClientRect();
-  const size = rect.width;
-  const cellSize = size / BOARD_SIZE;
-
-  const col = Math.floor((x - rect.left) / cellSize);
-  const row = Math.floor((y - rect.top) / cellSize);
+  const cellSize = (rect.width - BOARD_PAD * 2) / BOARD_SIZE;
+  const col = Math.floor((x - rect.left - BOARD_PAD) / cellSize);
+  const row = Math.floor((y - rect.top - BOARD_PAD) / cellSize);
 
   if (row < 0 || row >= BOARD_SIZE || col < 0 || col >= BOARD_SIZE) {
     return null;
@@ -899,11 +900,6 @@ function countValidPlacements(shape) {
 /** 보드 남은 자리 기준 가중치: 각 블럭을 놓을 수 있는 위치 개수 (0이면 등장 안 함) */
 function getPlacementWeights() {
   return SHAPES.map((_, i) => countValidPlacements(SHAPES[i]));
-}
-
-/** 보드 상황에 맞는 블럭 가중치: 보드판 남은 자리에 맞춰 배치 가능 개수로 확률 결정 */
-function getBoardAwareWeights() {
-  return getPlacementWeights();
 }
 
 function placeShape(shape, baseRow, baseCol, variant) {
@@ -1197,12 +1193,9 @@ function spawnFullScreenFireworks() {
 }
 
 function spawnClearParticles(fullRows, fullCols) {
-  if (!particleContainer) return;
+  if (!particleContainer || !boardEl) return;
   const rect = boardEl.getBoundingClientRect();
-  const gap = 4;
-  const innerWidth = rect.width - 20;
-  const totalGaps = gap * (BOARD_SIZE - 1);
-  const cellSize = (innerWidth - totalGaps) / BOARD_SIZE;
+  const cellSize = (rect.width - BOARD_PAD * 2) / BOARD_SIZE;
   const types = ['spark', 'gold', 'flare'];
 
   const clearingCells = new Set();
@@ -1215,8 +1208,8 @@ function spawnClearParticles(fullRows, fullCols) {
 
   clearingCells.forEach((key) => {
     const [r, c] = key.split(',').map(Number);
-    const centerX = 10 + c * (cellSize + gap) + cellSize / 2;
-    const centerY = 10 + r * (cellSize + gap) + cellSize / 2;
+    const centerX = BOARD_PAD + c * cellSize + cellSize / 2;
+    const centerY = BOARD_PAD + r * cellSize + cellSize / 2;
     const leftPct = (centerX / rect.width) * 100;
     const topPct = (centerY / rect.height) * 100;
 
@@ -1365,11 +1358,11 @@ function getGhostSize(shapeRows, shapeCols) {
   };
 }
 
-/** 보드 셀 크기 (getBoardCellFromPoint와 동일) */
+/** 보드 셀 크기 (getBoardCellFromPoint, updateGhostPosition와 동기화) */
 function getBoardCellSize() {
   if (!boardEl) return 0;
   const rect = boardEl.getBoundingClientRect();
-  return rect.width / BOARD_SIZE;
+  return (rect.width - BOARD_PAD * 2) / BOARD_SIZE;
 }
 
 /** 커서보다 50px 위 지점=블럭 기준. 보드 셀 계산용 고스트 하단·좌측 픽셀 위치 */
@@ -1407,12 +1400,11 @@ function updateGhostPosition(clientX, clientY) {
 
   const boardRect = boardEl.getBoundingClientRect();
   const wrapRect = boardWrap ? boardWrap.getBoundingClientRect() : boardRect;
-  const pad = 8;
-  const cellSize = (boardRect.width - pad * 2) / BOARD_SIZE;
+  const cellSize = (boardRect.width - BOARD_PAD * 2) / BOARD_SIZE;
 
   dragging.ghost.style.visibility = 'visible';
-  dragging.ghost.style.left = `${boardRect.left - wrapRect.left + pad + baseCol * cellSize}px`;
-  dragging.ghost.style.top = `${boardRect.top - wrapRect.top + pad + baseRow * cellSize}px`;
+  dragging.ghost.style.left = `${boardRect.left - wrapRect.left + BOARD_PAD + baseCol * cellSize}px`;
+  dragging.ghost.style.top = `${boardRect.top - wrapRect.top + BOARD_PAD + baseRow * cellSize}px`;
   dragging.ghost.style.gridTemplateColumns = `repeat(${cols}, ${cellSize}px)`;
   dragging.ghost.style.gridTemplateRows = `repeat(${rows}, ${cellSize}px)`;
   dragging.ghost.style.gap = '0';
@@ -1690,6 +1682,7 @@ function useMidasTouch() {
   });
   renderBoard();
   setTimeout(() => {
+    spawnItemExplosionEffect(targetCells);
     let clearedScore = 0;
     targetCells.forEach(({ r, c }) => {
       clearedScore += METAL_SCORES[METAL_TYPES.GOLD_24K];
@@ -1728,18 +1721,23 @@ function useGoldenHammer() {
   if (items.hammer <= 0) return false;
   const centerRow = Math.floor(BOARD_SIZE / 2);
   const centerCol = Math.floor(BOARD_SIZE / 2);
-  let clearedCount = 0;
-  let clearedScore = 0;
+  const targetCells = [];
   for (let r = centerRow - 1; r <= centerRow + 2; r++) {
     for (let c = centerCol - 1; c <= centerCol + 2; c++) {
       if (r >= 0 && r < BOARD_SIZE && c >= 0 && c < BOARD_SIZE && board[r][c] === 1) {
-        const variant = cellVariants[r][c] ?? 0;
-        board[r][c] = 0;
-        cellVariants[r][c] = null;
-        clearedCount++;
-        clearedScore += METAL_SCORES[variant];
+        targetCells.push({ r, c });
       }
     }
+  }
+  spawnItemExplosionEffect(targetCells);
+  let clearedCount = 0;
+  let clearedScore = 0;
+  for (const { r, c } of targetCells) {
+    const variant = cellVariants[r][c] ?? 0;
+    board[r][c] = 0;
+    cellVariants[r][c] = null;
+    clearedCount++;
+    clearedScore += METAL_SCORES[variant];
   }
   if (clearedCount > 0) {
     score += clearedScore;
@@ -1771,17 +1769,22 @@ function useTaxBreak() {
     }
   }
   const mostCommonVariant = variantCounts.indexOf(Math.max(...variantCounts));
-  let clearedCount = 0;
-  let clearedScore = 0;
+  const targetCells = [];
   for (let r = 0; r < BOARD_SIZE; r++) {
     for (let c = 0; c < BOARD_SIZE; c++) {
       if (board[r][c] === 1 && cellVariants[r][c] === mostCommonVariant) {
-        board[r][c] = 0;
-        cellVariants[r][c] = null;
-        clearedCount++;
-        clearedScore += METAL_SCORES[mostCommonVariant];
+        targetCells.push({ r, c });
       }
     }
+  }
+  spawnItemExplosionEffect(targetCells);
+  let clearedCount = 0;
+  let clearedScore = 0;
+  for (const { r, c } of targetCells) {
+    board[r][c] = 0;
+    cellVariants[r][c] = null;
+    clearedCount++;
+    clearedScore += METAL_SCORES[mostCommonVariant];
   }
   if (clearedCount > 0) {
     score += clearedScore;
@@ -1809,6 +1812,13 @@ const ITEM_NAMES = {
   tax: 'Tax Break',
 };
 
+const ITEM_ICONS = {
+  midas: '👑',
+  launder: '💼',
+  hammer: '🔨',
+  tax: '📋',
+};
+
 const ITEM_TYPES = ['midas', 'launder', 'hammer', 'tax'];
 
 function grantRandomItem() {
@@ -1819,7 +1829,45 @@ function grantRandomItem() {
   return ITEM_NAMES[itemType];
 }
 
-/** 아이템 사용 시 화려한 이펙트: 팝업 + 폭죽 + 보드 플래시 */
+/** 블럭 셀들에서 폭발 이펙트 스폰 */
+function spawnItemExplosionEffect(cells) {
+  if (!particleContainer || !boardEl || !cells.length) return;
+  const rect = boardEl.getBoundingClientRect();
+  const cellSize = (rect.width - BOARD_PAD * 2) / BOARD_SIZE;
+  const types = ['spark', 'gold', 'flare'];
+
+  cells.forEach(({ r, c }) => {
+    const centerX = BOARD_PAD + c * cellSize + cellSize / 2;
+    const centerY = BOARD_PAD + r * cellSize + cellSize / 2;
+    const leftPct = (centerX / rect.width) * 100;
+    const topPct = (centerY / rect.height) * 100;
+
+    const count = 12 + Math.floor(Math.random() * 6);
+    for (let i = 0; i < count; i++) {
+      const angle = (Math.PI * 2 * i) / count + Math.random() * 1.2;
+      const dist = 55 + Math.random() * 70;
+      const dx = Math.cos(angle) * dist;
+      const dy = Math.sin(angle) * dist;
+      const p = document.createElement('div');
+      p.className = 'clear-particle item-explosion-particle ' + types[i % types.length];
+      p.style.left = leftPct + '%';
+      p.style.top = topPct + '%';
+      p.style.setProperty('--dx', dx + 'px');
+      p.style.setProperty('--dy', dy + 'px');
+      p.style.animationDelay = (Math.random() * 50) + 'ms';
+      p.style.animationDuration = '0.5s';
+      particleContainer.appendChild(p);
+    }
+  });
+
+  setTimeout(() => {
+    if (particleContainer) {
+      particleContainer.querySelectorAll('.item-explosion-particle').forEach((el) => el.remove());
+    }
+  }, 600);
+}
+
+/** 아이템 사용 시 화려한 이펙트: 큰 아이콘 + 팝업 + 폭죽 + 보드 플래시 */
 function showItemEffect(itemType) {
   const labels = {
     midas: 'MIDAS TOUCH!',
@@ -1828,6 +1876,17 @@ function showItemEffect(itemType) {
     tax: 'TAX BREAK!',
   };
   const label = labels[itemType] || 'ITEM USED!';
+  const icon = ITEM_ICONS[itemType] || '✨';
+
+  if (effectLayer) {
+    const iconEl = document.createElement('div');
+    iconEl.className = 'item-effect-icon';
+    iconEl.textContent = icon;
+    iconEl.setAttribute('aria-hidden', 'true');
+    effectLayer.appendChild(iconEl);
+    requestAnimationFrame(() => iconEl.classList.add('item-effect-icon-visible'));
+    setTimeout(() => iconEl.remove(), 1800);
+  }
 
   const overlay = document.createElement('div');
   overlay.className = 'item-effect-overlay';
@@ -1908,7 +1967,7 @@ function handleItemUse(itemType) {
   if (used) {
     closeItemModal();
     showItemEffect(itemType);
-    updateItemDisplays();
+    /* updateItemDisplays는 각 use* 함수 내부에서 이미 호출됨 */
   }
 }
 
