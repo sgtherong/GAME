@@ -355,7 +355,7 @@ function loadBestScore() {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (stored) {
       bestScore = parseInt(stored, 10) || 0;
-      bestScoreEl.textContent = bestScore;
+      if (bestScoreEl) bestScoreEl.textContent = bestScore;
     }
   } catch (e) {
     // 무시
@@ -499,6 +499,7 @@ function getClearBoardBonusRatio(score) {
 }
 
 function renderBoard() {
+  if (!boardEl) return;
   boardEl.querySelectorAll('.cell').forEach((cell) => {
     const r = parseInt(cell.dataset.row, 10);
     const c = parseInt(cell.dataset.col, 10);
@@ -628,7 +629,7 @@ function deactivateFeverMode() {
 }
 
 function updateScoreDisplays(extraText = '') {
-  scoreEl.textContent = formatScore(score);
+  if (scoreEl) scoreEl.textContent = formatScore(score);
   if (bestScoreEl) bestScoreEl.textContent = formatScore(bestScore);
   if (linesEl) linesEl.textContent = totalLines;
   if (currentComboEl) {
@@ -758,6 +759,7 @@ function createRandomPiece(useBoardAware = true) {
 /** 두 블럭 형태가 동일한지 비교 */
 function shapesEqual(a, b) {
   if (!a || !b || a.length !== b.length) return false;
+  if (!a.length || !b.length) return false;
   if (a[0].length !== b[0].length) return false;
   for (let r = 0; r < a.length; r++) {
     for (let c = 0; c < a[0].length; c++) {
@@ -801,6 +803,7 @@ function generatePieces() {
 }
 
 function renderPieces() {
+  if (!piecesEl) return;
   piecesEl.innerHTML = '';
 
   activePieces.forEach((shape, idx) => {
@@ -844,6 +847,7 @@ function renderPieces() {
 }
 
 function getBoardCellFromPoint(x, y) {
+  if (!boardEl) return null;
   const rect = boardEl.getBoundingClientRect();
   const size = rect.width;
   const cellSize = size / BOARD_SIZE;
@@ -1239,12 +1243,14 @@ function spawnClearParticles(fullRows, fullCols) {
 }
 
 function clearPreview() {
+  if (!boardEl) return;
   boardEl.querySelectorAll('.cell').forEach((cell) => {
     cell.classList.remove('preview-okay', 'preview-bad');
   });
 }
 
 function applyPreview(shape, baseRow, baseCol, isValid) {
+  if (!boardEl) return;
   clearPreview();
   const rows = shape.length;
   const cols = shape[0].length;
@@ -1319,7 +1325,8 @@ function onPieceMouseDown(e) {
 
 function onPieceTouchStart(e) {
   e.preventDefault();
-  const touch = e.touches[0];
+  const touch = e.touches && e.touches[0];
+  if (!touch) return;
   const wrapper = e.currentTarget;
   const piece = wrapper.querySelector('.piece');
   if (!piece) return;
@@ -1360,6 +1367,7 @@ function getGhostSize(shapeRows, shapeCols) {
 
 /** 보드 셀 크기 (getBoardCellFromPoint와 동일) */
 function getBoardCellSize() {
+  if (!boardEl) return 0;
   const rect = boardEl.getBoundingClientRect();
   return rect.width / BOARD_SIZE;
 }
@@ -1377,7 +1385,7 @@ function getGhostBottomLeft(clientX, clientY, shapeRows, shapeCols) {
 }
 
 function updateGhostPosition(clientX, clientY) {
-  if (!dragging || !dragging.ghost) return;
+  if (!dragging || !dragging.ghost || !boardEl || !boardWrap) return;
   const rows = dragging.shape.length;
   const cols = dragging.shape[0].length;
 
@@ -1606,11 +1614,13 @@ function showHint() {
 
 function handleGameOver() {
   playGameOverSound();
-  finalScoreEl.textContent = formatScore(score);
-  gameOverModal.classList.remove('hidden');
-  requestAnimationFrame(() => {
-    gameOverModal.classList.add('modal-visible');
-  });
+  if (finalScoreEl) finalScoreEl.textContent = formatScore(score);
+  if (gameOverModal) {
+    gameOverModal.classList.remove('hidden');
+    requestAnimationFrame(() => {
+      gameOverModal.classList.add('modal-visible');
+    });
+  }
 }
 
 function resetGame() {
@@ -1646,11 +1656,15 @@ function resetGame() {
   updateRank();
   if (effectLayer) effectLayer.innerHTML = '';
   document.querySelectorAll('.fireworks-overlay').forEach((el) => el.remove());
-  renderBoard();
-  if (piecesEl) piecesEl.innerHTML = '';
-  generatePieces();
-  gameOverModal.classList.add('hidden');
-  gameOverModal.classList.remove('modal-visible');
+  if (boardEl) renderBoard();
+  if (piecesEl) {
+    piecesEl.innerHTML = '';
+    generatePieces();
+  }
+  if (gameOverModal) {
+    gameOverModal.classList.add('hidden');
+    gameOverModal.classList.remove('modal-visible');
+  }
 }
 
 function useMidasTouch() {
