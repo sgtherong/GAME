@@ -1016,7 +1016,7 @@ body.fever-mode .app {
   cursor: pointer;
 }
 
-/* 아이템 위치 선택: 보드판 터치 안내 */
+/* Item position selection: touch board prompt */
 .item-touch-prompt {
   position: absolute;
   bottom: 8%;
@@ -1718,7 +1718,103 @@ body.fever-mode .app {
   border-color: rgba(74, 53, 32, 0.5);
 }
 
-/* 모바일: 배경 이미지 최적화 (세로 화면에 맞춤, 성능 개선) */
+/* Settings modal */
+.settings-modal-content {
+  min-width: 280px;
+}
+
+.settings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 20px 0;
+}
+
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 12px;
+  background: rgba(42, 26, 14, 0.4);
+  border-radius: 8px;
+  border: 1px solid rgba(74, 53, 32, 0.5);
+  cursor: pointer;
+}
+
+.settings-label {
+  font-size: 0.95rem;
+  color: var(--text);
+}
+
+.settings-row input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--gold);
+  cursor: pointer;
+}
+
+.settings-row select {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(74, 53, 32, 0.6);
+  background: rgba(42, 26, 14, 0.8);
+  color: var(--text);
+  font-size: 0.9rem;
+  cursor: pointer;
+  min-width: 100px;
+}
+
+.settings-modal-content > .secondary-btn {
+  width: 100%;
+  margin-top: 8px;
+}
+
+.settings-help-btn {
+  width: 100%;
+  padding: 12px 16px;
+  margin-top: 4px;
+  border-radius: 8px;
+  border: 1px solid rgba(212, 168, 75, 0.5);
+  background: rgba(212, 168, 75, 0.12);
+  color: var(--gold);
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+.settings-help-btn:hover {
+  background: rgba(212, 168, 75, 0.22);
+  border-color: rgba(212, 168, 75, 0.7);
+}
+
+/* Help / How to Play modal */
+.help-modal-content {
+  min-width: 300px;
+  max-width: 420px;
+  max-height: 85vh;
+  overflow-y: auto;
+}
+
+.help-content {
+  margin: 16px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.help-content p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.help-modal-content > .secondary-btn {
+  width: 100%;
+  margin-top: 8px;
+}
+
+/* Mobile: 배경 이미지 최적화 */
 @media (max-width: 900px) {
   body {
     background-attachment: scroll;

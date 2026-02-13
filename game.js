@@ -1,5 +1,180 @@
 const BOARD_SIZE = 8;
-const BOARD_PAD = 8; // 보드 padding (style.css .board와 동기화)
+const BOARD_PAD = 8;
+const LANG_STORAGE_KEY = 'goldenblast-lang';
+
+const LANG = {
+  en: {
+    newGame: 'New Game',
+    hint: 'Hint',
+    settings: 'Settings',
+    items: 'Items',
+    close: 'Close',
+    gameOver: 'Game Over',
+    noMoreRoom: 'No more room for gold.',
+    finalScore: 'Final score',
+    playAgain: 'Play Again',
+    itemInventory: 'Item Inventory',
+    use: 'Use',
+    count: 'Count',
+    countLabel: 'Count:',
+    backgroundMusic: 'Background Music',
+    soundEffects: 'Sound Effects',
+    screenShake: 'Screen Shake',
+    language: 'Language',
+    langEn: 'English',
+    langKo: '한국어',
+    touchBoard: 'Touch the board',
+    useItemConfirm: 'Use {0}?',
+    midasTouch: 'Midas Touch',
+    moneyLaunder: 'Money Launder',
+    goldenHammer: 'Golden Hammer',
+    taxBreak: 'Tax Break',
+    midasDesc: 'Turn 3×3 center area to 24K Gold',
+    launderDesc: 'Refresh all 3 active blocks',
+    hammerDesc: 'Clear 4×4 center area',
+    taxDesc: 'Clear all blocks of most common type',
+    noValidSpots: 'No valid spots left. Game will end soon.',
+    noValid: 'No valid spots.',
+    hintMessage: 'Hint: Place the highlighted block on the green spot.',
+    launderUsed: 'Money Launder: Blocks refreshed!',
+    exclamation: { line: ['Nice!', 'Good!', 'Yeah!', 'Sweet!', 'Oh!', 'Yes!'], multiLine: ['Awesome!', 'Amazing!', 'Perfect!', 'Great!', 'Boom!', 'Incredible!', 'Wow!', 'Super!'], combo2: ['Combo!', 'Double!', 'Again!', 'Streak!', 'Two!', 'Nice!'], combo3: ['Legend!', 'Unreal!', 'Godlike!', 'Combo burst!', 'Incredible!', 'Ridiculous!', 'Fire!'] },
+    goldenHour: 'GOLDEN HOUR!',
+    clearBoard: 'CLEAR BOARD!',
+    itemLabels: { midas: 'MIDAS TOUCH!', launder: 'MONEY LAUNDER!', hammer: 'GOLDEN HAMMER!', tax: 'TAX BREAK!' },
+    midasUsed: 'Midas Touch: {0} blocks turned to gold!',
+    hammerUsed: 'Golden Hammer cleared {0} blocks!',
+    taxUsed: 'Tax Break cleared {0} {1} blocks!',
+    metalCopper: 'Copper',
+    metalSilver: 'Silver',
+    metalPlatinum: 'Platinum',
+    metalRoseGold: 'Rose Gold',
+    metalGold: '24K Gold',
+    gainBlock: '+{0} {1} block{2}',
+    gainLineClear: '+{0} pts ({1} line clear!)',
+    gainComboLineClear: '+{0} pts ({1} line(s) · combo {2}x!)',
+    clearBoardBonus: '+ Clear Board Bonus!',
+    itemGranted: '+1 {0}!',
+    howToPlay: 'How to Play',
+    helpTitle: 'How to Play',
+    helpBasic: 'Place blocks on the 8×8 board. Drag a block and drop it on a valid spot.',
+    helpClear: 'When a row or column is completely filled, it clears and you earn points.',
+    helpScore: 'Higher metals score more: Copper(10) → Silver(20) → Platinum(30) → Rose Gold(40) → 24K Gold(50).',
+    helpCombo: 'Clear lines consecutively for combo multiplier. 3-combo grants a random item!',
+    helpItems: 'Items: Midas Touch, Money Launder, Golden Hammer, Tax Break. Use them from the Items button.',
+    helpGoal: 'Survive as long as possible. Game over when no block can be placed.',
+  },
+  ko: {
+    newGame: '새 게임',
+    hint: '힌트',
+    settings: '설정',
+    items: '아이템',
+    close: '닫기',
+    gameOver: '게임 오버',
+    noMoreRoom: '금괴를 놓을 자리가 없습니다.',
+    finalScore: '최종 점수',
+    playAgain: '다시 하기',
+    itemInventory: '아이템 인벤토리',
+    use: '사용',
+    count: '개수',
+    countLabel: '개수:',
+    backgroundMusic: '배경 음악',
+    soundEffects: '효과음',
+    screenShake: '화면 흔들림',
+    language: '언어',
+    langEn: 'English',
+    langKo: '한국어',
+    touchBoard: '보드판을 터치하세요',
+    useItemConfirm: '{0}을(를) 사용하시겠습니까?',
+    midasTouch: '미다스 터치',
+    moneyLaunder: '머니 런더',
+    goldenHammer: '골든 해머',
+    taxBreak: '택스 브레이크',
+    midasDesc: '3×3 중앙 영역을 24K 금으로 변환',
+    launderDesc: '활성 블럭 3개 새로고침',
+    hammerDesc: '4×4 중앙 영역 제거',
+    taxDesc: '가장 많은 색의 블럭 전체 제거',
+    noValidSpots: '놓을 수 있는 자리가 없습니다. 곧 게임이 종료됩니다.',
+    noValid: '놓을 수 있는 자리가 없습니다.',
+    hintMessage: '힌트: 하이라이트된 블럭을 초록색 위치에 놓으세요.',
+    launderUsed: '머니 런더: 블럭이 새로고침되었습니다!',
+    exclamation: { line: ['좋아!', '굿!', '예스!', '스윗!', '오!', '응!'], multiLine: ['대박!', '굉장해!', '완벽!', '훌륭해!', '쾅!', '놀라워!', '와!', '슈퍼!'], combo2: ['콤보!', '더블!', '다시!', '연속!', '투!', '좋아!'], combo3: ['전설!', '비현실!', '신급!', '콤보 버스트!', '놀라워!', '말도 안돼!', '불타!'] },
+    goldenHour: '골든 아워!',
+    clearBoard: '보드 클리어!',
+    itemLabels: { midas: '미다스 터치!', launder: '머니 런더!', hammer: '골든 해머!', tax: '택스 브레이크!' },
+    midasUsed: '미다스 터치: {0}개 블럭이 금으로 변했습니다!',
+    hammerUsed: '골든 해머: {0}개 블럭 제거!',
+    taxUsed: '택스 브레이크: {0}개 {1} 블럭 제거!',
+    metalCopper: '구리',
+    metalSilver: '은',
+    metalPlatinum: '백금',
+    metalRoseGold: '로즈골드',
+    metalGold: '24K 금',
+    gainBlock: '+{0}개 {1} 블럭',
+    gainLineClear: '+{0} pts ({1}줄 제거!)',
+    gainComboLineClear: '+{0} pts ({1}줄 · 콤보 {2}x!)',
+    clearBoardBonus: '+ 보드 클리어 보너스!',
+    itemGranted: '+1 {0}!',
+    howToPlay: '게임 방법',
+    helpTitle: '게임 방법',
+    helpBasic: '8×8 보드에 블럭을 놓으세요. 블럭을 드래그해서 빈 칸에 놓을 수 있습니다.',
+    helpClear: '가로나 세로 한 줄이 꽉 차면 제거되고 점수를 얻습니다.',
+    helpScore: '금속 등급별 점수: 구리(10) → 은(20) → 백금(30) → 로즈골드(40) → 24K 금(50).',
+    helpCombo: '연속으로 줄을 제거하면 콤보 배율이 적용됩니다. 3콤보 시 랜덤 아이템 획득!',
+    helpItems: '아이템: 미다스 터치, 머니 런더, 골든 해머, 택스 브레이크. 아이템 버튼에서 사용하세요.',
+    helpGoal: '가능한 오래 버티세요. 블럭을 놓을 수 없으면 게임 오버입니다.',
+  },
+};
+
+let currentLang = 'en';
+
+function t(key, ...args) {
+  const keys = key.split('.');
+  let v = LANG[currentLang];
+  for (const k of keys) v = v?.[k];
+  if (v == null) {
+    v = LANG.en;
+    for (const k of keys) v = v?.[k];
+  }
+  if (v == null) return key;
+  if (Array.isArray(v)) return v;
+  let s = String(v);
+  args.forEach((a, i) => { s = s.replace('{' + i + '}', a); });
+  return s;
+}
+
+function applyLang() {
+  document.documentElement.lang = currentLang === 'ko' ? 'ko' : 'en';
+  document.querySelectorAll('[data-i18n]').forEach((el) => {
+    el.textContent = t(el.dataset.i18n);
+  });
+  const resetBtn = document.getElementById('resetBtn');
+  const hintBtn = document.getElementById('hintBtn');
+  const settingsBtn = document.getElementById('settingsBtn');
+  const restartBtn = document.getElementById('restartBtn');
+  const closeItemBtn = document.getElementById('closeItemModal');
+  const closeSettingsBtn = document.getElementById('closeSettingsModal');
+  const itemBtnLabel = document.querySelector('#itemBtn .item-btn-label');
+  if (resetBtn) resetBtn.textContent = t('newGame');
+  if (hintBtn) hintBtn.textContent = t('hint');
+  if (settingsBtn) settingsBtn.textContent = '⚙️ ' + t('settings');
+  if (restartBtn) restartBtn.textContent = t('playAgain');
+  if (closeItemBtn) closeItemBtn.textContent = t('close');
+  if (closeSettingsBtn) closeSettingsBtn.textContent = t('close');
+  if (itemBtnLabel) itemBtnLabel.textContent = t('items');
+  document.querySelectorAll('.item-slot[data-item]').forEach((slot) => {
+    const item = slot.dataset.item;
+    if (item) {
+      const name = getItemName(item);
+      slot.setAttribute('aria-label', name);
+      slot.setAttribute('title', name);
+    }
+  });
+  const langOpts = document.querySelectorAll('#settingLang option');
+  if (langOpts.length >= 2) {
+    langOpts[0].textContent = t('langEn');
+    langOpts[1].textContent = t('langKo');
+  }
+}
 const LOCAL_STORAGE_KEY = 'blockblast-best-score';
 
 /** 간단한 블록 패턴들 (1은 블록, 0은 빈 칸). 1칸 블록 제외
@@ -195,6 +370,12 @@ const itemBtn = document.getElementById('itemBtn');
 const itemModal = document.getElementById('itemModal');
 const closeItemModalBtn = document.getElementById('closeItemModal');
 const playerRankEl = document.getElementById('playerRank');
+const settingsBtn = document.getElementById('settingsBtn');
+const settingsModal = document.getElementById('settingsModal');
+const closeSettingsModalBtn = document.getElementById('closeSettingsModal');
+const helpModal = document.getElementById('helpModal');
+const closeHelpModalBtn = document.getElementById('closeHelpModal');
+const howToPlayBtn = document.getElementById('howToPlayBtn');
 
 /** 아이템 보유 개수 */
 const ITEM_STORAGE_KEY = 'goldenblast-items';
@@ -208,7 +389,10 @@ let items = {
 /* ----- 사운드 (Web Audio API로 생성) ----- */
 let audioCtx = null;
 const BGM_STORAGE_KEY = 'blockblast-bgm-muted';
+const SETTINGS_STORAGE_KEY = 'goldenblast-settings';
 let bgmMuted = false;
+let sfxMuted = false;
+let screenShakeEnabled = true;
 let bgmNodes = null; // { gain, oscillators[] }
 let bgmTingInterval = null; // melody interval
 
@@ -270,7 +454,7 @@ function toggleBGM() {
   } catch (e) {}
   const btn = document.getElementById('bgmBtn');
   if (btn) {
-    btn.textContent = bgmMuted ? '🔇 배경음' : '🎵 배경음';
+    btn.textContent = bgmMuted ? '🔇 BGM' : '🎵 BGM';
     btn.setAttribute('aria-pressed', bgmMuted ? 'true' : 'false');
   }
   if (bgmMuted) {
@@ -288,6 +472,7 @@ function toggleBGM() {
 }
 
 function playPlaceSound() {
+  if (sfxMuted) return;
   initAudio();
   if (!audioCtx) return;
   const osc = audioCtx.createOscillator();
@@ -303,6 +488,7 @@ function playPlaceSound() {
 }
 
 function playLineClearSound(lineCount, combo) {
+  if (sfxMuted) return;
   initAudio();
   if (!audioCtx) return;
   const comboBoost = combo > 1 ? Math.min(combo * 0.08, 0.5) : 0;
@@ -324,6 +510,7 @@ function playLineClearSound(lineCount, combo) {
 }
 
 function playGameOverSound() {
+  if (sfxMuted) return;
   initAudio();
   if (!audioCtx) return;
   const osc = audioCtx.createOscillator();
@@ -610,7 +797,7 @@ function activateFeverMode() {
   if (effectLayer) {
     const pop = document.createElement('div');
     pop.className = 'fever-popup';
-    pop.textContent = 'GOLDEN HOUR!';
+    pop.textContent = t('goldenHour');
     effectLayer.appendChild(pop);
     requestAnimationFrame(() => pop.classList.add('fever-popup-visible'));
     setTimeout(() => pop.remove(), 2000);
@@ -650,25 +837,12 @@ function updateScoreDisplays(extraText = '') {
   if (lastGainEl) lastGainEl.textContent = extraText;
 }
 
-/** 줄 클리어/콤보 시 띄울 감탄사 목록 */
-const EXCLAMATIONS = {
-  line: ['Nice!', 'Good!', 'Yeah!', 'Sweet!', 'Oh!', 'Yes!'],
-  multiLine: ['Awesome!', 'Amazing!', 'Perfect!', 'Great!', 'Boom!', 'Incredible!', 'Wow!', 'Super!'],
-  combo2: ['Combo!', 'Double!', 'Again!', 'Streak!', 'Two!', 'Nice!'],
-  combo3: ['Legend!', 'Unreal!', 'Godlike!', 'Combo burst!', 'Incredible!', 'Ridiculous!', 'Fire!'],
-};
-
 function pickExclamation(cleared, comboCount) {
-  if (comboCount >= 3) {
-    return EXCLAMATIONS.combo3[Math.floor(Math.random() * EXCLAMATIONS.combo3.length)];
-  }
-  if (comboCount >= 2) {
-    return EXCLAMATIONS.combo2[Math.floor(Math.random() * EXCLAMATIONS.combo2.length)];
-  }
-  if (cleared >= 2) {
-    return EXCLAMATIONS.multiLine[Math.floor(Math.random() * EXCLAMATIONS.multiLine.length)];
-  }
-  return EXCLAMATIONS.line[Math.floor(Math.random() * EXCLAMATIONS.line.length)];
+  const arr = comboCount >= 3 ? t('exclamation.combo3')
+    : comboCount >= 2 ? t('exclamation.combo2')
+    : cleared >= 2 ? t('exclamation.multiLine')
+    : t('exclamation.line');
+  return Array.isArray(arr) ? arr[Math.floor(Math.random() * arr.length)] : 'Nice!';
 }
 
 function showExclamationPopup(cleared, comboCount) {
@@ -686,7 +860,7 @@ function showComboPopup(comboCount) {
   if (!effectLayer) return;
   const pop = document.createElement('div');
   pop.className = 'combo-popup';
-  pop.textContent = 'COMBO x' + comboCount;
+  pop.textContent = (currentLang === 'ko' ? '콤보' : 'COMBO') + ' x' + comboCount;
   effectLayer.appendChild(pop);
   requestAnimationFrame(() => pop.classList.add('combo-popup-visible'));
   setTimeout(() => {
@@ -695,7 +869,7 @@ function showComboPopup(comboCount) {
 }
 
 function screenShake() {
-  if (!boardWrap) return;
+  if (!screenShakeEnabled || !boardWrap) return;
   boardWrap.classList.remove('board-shake');
   void boardWrap.offsetWidth;
   boardWrap.classList.add('board-shake');
@@ -941,7 +1115,7 @@ function placeShape(shape, baseRow, baseCol, variant) {
   const fullCols = clearResult.fullCols || [];
   const clearedBlockScore = clearResult.clearedBlockScore || 0;
   const isFullClear = clearResult.isFullClear || false;
-  let gainText = `+${placedCount} ${METAL_NAMES[v]} block${placedCount !== 1 ? 's' : ''}`;
+  let gainText = t('gainBlock', String(placedCount), getMetalName(v), placedCount !== 1 ? 's' : '');
   let totalGain = blockScore;
 
   if (cleared > 0) {
@@ -962,7 +1136,7 @@ function placeShape(shape, baseRow, baseCol, variant) {
       if (effectLayer) {
         const pop = document.createElement('div');
         pop.className = 'clear-board-popup';
-        pop.textContent = 'CLEAR BOARD!';
+        pop.textContent = t('clearBoard');
         effectLayer.appendChild(pop);
         requestAnimationFrame(() => pop.classList.add('clear-board-popup-visible'));
         setTimeout(() => pop.remove(), 2000);
@@ -986,10 +1160,10 @@ function placeShape(shape, baseRow, baseCol, variant) {
       showExclamationPopup(cleared, currentCombo);
     }
     gainText = currentCombo >= 2
-      ? `+${finalScore.toLocaleString()} pts (${cleared} line(s) · combo ${currentCombo}x!)`
-      : `+${finalScore.toLocaleString()} pts (${cleared} line clear!)`;
-    if (isFullClear) gainText += ` + Clear Board Bonus!`;
-    if (grantedItemName) gainText += ` +1 ${grantedItemName}!`;
+      ? t('gainComboLineClear', finalScore.toLocaleString(), String(cleared), String(currentCombo))
+      : t('gainLineClear', finalScore.toLocaleString(), String(cleared));
+    if (isFullClear) gainText += ' ' + t('clearBoardBonus');
+    if (grantedItemName) gainText += ' ' + t('itemGranted', grantedItemName);
   } else {
     if (comboTimeLeft <= 0) {
       currentCombo = 0;
@@ -1603,7 +1777,7 @@ function clearHintHighlight() {
 function showHint() {
   if (!hasAnyValidMove()) {
     if (lastGainEl) {
-      lastGainEl.textContent = 'No valid spots left. Game will end soon.';
+      lastGainEl.textContent = t('noValidSpots');
     }
     return;
   }
@@ -1611,7 +1785,7 @@ function showHint() {
   const move = findHintMove();
   if (!move) {
     if (lastGainEl) {
-      lastGainEl.textContent = 'No valid spots.';
+      lastGainEl.textContent = t('noValid');
     }
     return;
   }
@@ -1631,7 +1805,7 @@ function showHint() {
   }, 1500);
 
   if (lastGainEl) {
-    lastGainEl.textContent = 'Hint: Place the highlighted block on the green spot.';
+    lastGainEl.textContent = t('hintMessage');
   }
 }
 
@@ -1724,7 +1898,7 @@ function useMidasTouch(centerRow, centerCol) {
         bestScore = score;
         saveBestScore();
       }
-      updateScoreDisplays(`Midas Touch: ${count} blocks turned to gold!`);
+      updateScoreDisplays(t('midasUsed', String(count)));
       updateRank();
     });
   }, 300);
@@ -1740,7 +1914,7 @@ function useMoneyLaunder() {
   items.launder--;
   saveItems();
   updateItemDisplays();
-  if (lastGainEl) lastGainEl.textContent = 'Money Launder: Blocks refreshed!';
+  if (lastGainEl) lastGainEl.textContent = t('launderUsed');
   return true;
 }
 
@@ -1767,7 +1941,7 @@ function useGoldenHammer(centerRow, centerCol) {
         bestScore = score;
         saveBestScore();
       }
-      updateScoreDisplays(`Golden Hammer cleared ${clearedCount} blocks!`);
+      updateScoreDisplays(t('hammerUsed', String(clearedCount)));
       updateRank();
     }
   });
@@ -1807,7 +1981,7 @@ function useTaxBreak() {
         bestScore = score;
         saveBestScore();
       }
-      updateScoreDisplays(`Tax Break cleared ${clearedCount} ${METAL_NAMES[mostCommonVariant]} blocks!`);
+      updateScoreDisplays(t('taxUsed', String(clearedCount), getMetalName(mostCommonVariant)));
       updateRank();
     }
   });
@@ -1853,12 +2027,14 @@ function clearCellsWithRandomOrder(targetCells, getScoreForCell, onComplete) {
   }, maxDelay + 280);
 }
 
-const ITEM_NAMES = {
-  midas: 'Midas Touch',
-  launder: 'Money Launder',
-  hammer: 'Golden Hammer',
-  tax: 'Tax Break',
-};
+function getItemName(type) {
+  return t(type === 'midas' ? 'midasTouch' : type === 'launder' ? 'moneyLaunder' : type === 'hammer' ? 'goldenHammer' : 'taxBreak');
+}
+
+function getMetalName(variant) {
+  const keys = ['metalCopper', 'metalSilver', 'metalPlatinum', 'metalRoseGold', 'metalGold'];
+  return t(keys[variant] || keys[0]);
+}
 
 const ITEM_ICONS = {
   midas: '👑',
@@ -1874,7 +2050,7 @@ function grantRandomItem() {
   items[itemType]++;
   saveItems();
   updateItemDisplays();
-  return ITEM_NAMES[itemType];
+  return getItemName(itemType);
 }
 
 /** 블럭 셀들에서 폭발 이펙트 스폰 */
@@ -1917,13 +2093,7 @@ function spawnItemExplosionEffect(cells) {
 
 /** 아이템 사용 시 화려한 이펙트: 큰 아이콘 + 팝업 + 폭죽 + 보드 플래시 */
 function showItemEffect(itemType) {
-  const labels = {
-    midas: 'MIDAS TOUCH!',
-    launder: 'MONEY LAUNDER!',
-    hammer: 'GOLDEN HAMMER!',
-    tax: 'TAX BREAK!',
-  };
-  const label = labels[itemType] || 'ITEM USED!';
+  const label = t('itemLabels.' + itemType) || '!';
   const icon = ITEM_ICONS[itemType] || '✨';
 
   if (effectLayer) {
@@ -2004,7 +2174,7 @@ function enterItemSelectionMode(itemType) {
     itemTouchPromptEl = document.createElement('div');
     itemTouchPromptEl.className = 'item-touch-prompt';
     itemTouchPromptEl.setAttribute('aria-hidden', 'true');
-    itemTouchPromptEl.innerHTML = '<span class="item-touch-icon">👆</span><span class="item-touch-text">보드판을 터치하세요</span>';
+    itemTouchPromptEl.innerHTML = '<span class="item-touch-icon">👆</span><span class="item-touch-text">' + t('touchBoard') + '</span>';
     effectLayer.appendChild(itemTouchPromptEl);
   }
 }
@@ -2022,8 +2192,8 @@ function exitItemSelectionMode() {
 function handleItemUse(itemType) {
   if (!itemType || !ITEM_TYPES.includes(itemType)) return;
   if (items[itemType] <= 0) return;
-  const itemName = ITEM_NAMES[itemType] || itemType;
-  if (!confirm(`Use ${itemName}?`)) return;
+  const itemName = getItemName(itemType);
+  if (!confirm(t('useItemConfirm', itemName))) return;
   let used = false;
   if (ITEMS_NEED_POSITION.includes(itemType)) {
     enterItemSelectionMode(itemType);
@@ -2103,11 +2273,19 @@ if (itemModal) {
   });
 }
 
-// ESC 키로 모달 닫기 / 아이템 선택 모드 취소
+// ESC key: close modals / cancel item selection mode
 document.addEventListener('keydown', (e) => {
   if (e.key !== 'Escape') return;
   if (itemSelectionMode.active) {
     exitItemSelectionMode();
+    return;
+  }
+  if (helpModal && !helpModal.classList.contains('hidden')) {
+    closeHelpModalFn();
+    return;
+  }
+  if (settingsModal && !settingsModal.classList.contains('hidden')) {
+    closeSettingsModalFn();
     return;
   }
   if (itemModal && !itemModal.classList.contains('hidden')) {
@@ -2177,10 +2355,66 @@ function unlockAudio() {
 document.addEventListener('click', unlockAudio, { once: true });
 document.addEventListener('touchstart', unlockAudio, { once: true });
 
-// 배경음 설정 로드 및 버튼 초기 상태
-try {
-  bgmMuted = localStorage.getItem(BGM_STORAGE_KEY) === '1';
-} catch (e) {}
+// Load settings
+function loadSettings() {
+  try {
+    const lang = localStorage.getItem(LANG_STORAGE_KEY);
+    if (lang === 'ko' || lang === 'en') currentLang = lang;
+    bgmMuted = localStorage.getItem(BGM_STORAGE_KEY) === '1';
+    const s = localStorage.getItem(SETTINGS_STORAGE_KEY);
+    if (s) {
+      const parsed = JSON.parse(s);
+      if (typeof parsed.sfx === 'boolean') sfxMuted = !parsed.sfx;
+      if (typeof parsed.screenShake === 'boolean') screenShakeEnabled = parsed.screenShake;
+    }
+  } catch (e) {}
+}
+
+function saveSettings() {
+  try {
+    localStorage.setItem(LANG_STORAGE_KEY, currentLang);
+    localStorage.setItem(BGM_STORAGE_KEY, bgmMuted ? '1' : '0');
+    localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify({
+      sfx: !sfxMuted,
+      screenShake: screenShakeEnabled,
+    }));
+  } catch (e) {}
+}
+
+function openSettingsModal() {
+  if (!settingsModal) return;
+  settingsModal.classList.remove('hidden');
+  requestAnimationFrame(() => settingsModal.classList.add('modal-visible'));
+  const langSelect = document.getElementById('settingLang');
+  const bgmCheck = document.getElementById('settingBGM');
+  const sfxCheck = document.getElementById('settingSFX');
+  const shakeCheck = document.getElementById('settingScreenShake');
+  if (langSelect) langSelect.value = currentLang;
+  if (bgmCheck) bgmCheck.checked = !bgmMuted;
+  if (sfxCheck) sfxCheck.checked = !sfxMuted;
+  if (shakeCheck) shakeCheck.checked = screenShakeEnabled;
+}
+
+function closeSettingsModalFn() {
+  if (!settingsModal) return;
+  settingsModal.classList.add('hidden');
+  settingsModal.classList.remove('modal-visible');
+}
+
+function openHelpModal() {
+  if (!helpModal) return;
+  helpModal.classList.remove('hidden');
+  requestAnimationFrame(() => helpModal.classList.add('modal-visible'));
+}
+
+function closeHelpModalFn() {
+  if (!helpModal) return;
+  helpModal.classList.add('hidden');
+  helpModal.classList.remove('modal-visible');
+}
+
+loadSettings();
+applyLang();
 const bgmBtn = document.getElementById('bgmBtn');
 if (bgmBtn) {
   bgmBtn.textContent = bgmMuted ? '🔇 BGM' : '🎵 BGM';
@@ -2188,7 +2422,56 @@ if (bgmBtn) {
   bgmBtn.addEventListener('click', toggleBGM);
 }
 
-// 초기화 - DOM이 로드된 후 실행
+if (settingsBtn) settingsBtn.addEventListener('click', openSettingsModal);
+if (closeSettingsModalBtn) closeSettingsModalBtn.addEventListener('click', closeSettingsModalFn);
+if (settingsModal) {
+  settingsModal.addEventListener('click', (e) => {
+    if (e.target === settingsModal) closeSettingsModalFn();
+  });
+}
+if (howToPlayBtn) howToPlayBtn.addEventListener('click', () => { closeSettingsModalFn(); openHelpModal(); });
+if (closeHelpModalBtn) closeHelpModalBtn.addEventListener('click', closeHelpModalFn);
+if (helpModal) {
+  helpModal.addEventListener('click', (e) => {
+    if (e.target === helpModal) closeHelpModalFn();
+  });
+}
+
+document.getElementById('settingBGM')?.addEventListener('change', (e) => {
+  bgmMuted = !e.target.checked;
+  saveSettings();
+  if (bgmBtn) {
+    bgmBtn.textContent = bgmMuted ? '🔇 BGM' : '🎵 BGM';
+    bgmBtn.setAttribute('aria-pressed', bgmMuted ? 'true' : 'false');
+  }
+  if (bgmMuted) stopBGM();
+  else {
+    initAudio();
+    if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+    if (audioCtx && !bgmMuted) {
+      function tryStart() {
+        if (audioCtx.state === 'running') startBGM();
+        else audioCtx.addEventListener('statechange', tryStart, { once: true });
+      }
+      tryStart();
+    }
+  }
+});
+document.getElementById('settingSFX')?.addEventListener('change', (e) => {
+  sfxMuted = !e.target.checked;
+  saveSettings();
+});
+document.getElementById('settingScreenShake')?.addEventListener('change', (e) => {
+  screenShakeEnabled = e.target.checked;
+  saveSettings();
+});
+document.getElementById('settingLang')?.addEventListener('change', (e) => {
+  currentLang = e.target.value === 'ko' ? 'ko' : 'en';
+  saveSettings();
+  applyLang();
+});
+
+// Initialize when DOM is ready
 function initGame() {
   if (!boardEl || !piecesEl) {
     console.error('DOM elements not found');
@@ -2206,6 +2489,6 @@ function initGame() {
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initGame);
 } else {
-  // DOM이 이미 로드된 경우 즉시 실행
+  // Run immediately if DOM already loaded
   initGame();
 }

@@ -70,7 +70,7 @@
             </div>
             <button id="itemBtn" class="item-inventory-btn" type="button" title="Items" aria-label="Items">
               <span class="item-btn-icon">💎</span>
-              <span class="item-btn-label">Items</span>
+              <span class="item-btn-label" data-i18n="items">Items</span>
             </button>
           </div>
         </div>
@@ -91,74 +91,115 @@
 
       <footer class="footer">
         <div class="footer-left">
-          <button id="resetBtn" class="primary-btn" aria-label="New Game">New Game</button>
-          <button id="hintBtn" class="secondary-btn" aria-label="Hint">Hint</button>
+          <button id="resetBtn" class="primary-btn" aria-label="New Game" data-i18n="newGame">New Game</button>
+          <button id="hintBtn" class="secondary-btn" aria-label="Hint" data-i18n="hint">Hint</button>
+          <button id="settingsBtn" class="secondary-btn" type="button" title="Settings" aria-label="Settings">⚙️ Settings</button>
           <button id="bgmBtn" class="secondary-btn" type="button" title="Toggle BGM" aria-pressed="false" aria-label="BGM">🎵 BGM</button>
         </div>
         <p class="hint" aria-hidden="true"></p>
       </footer>
 
       <div class="ad-banner">
-        <!-- 광고 배너 영역 -->
+        <!-- Ad banner area -->
         <div id="adContainer" class="ad-container"></div>
       </div>
     </div>
 
     <div id="gameOverModal" class="modal hidden">
       <div class="modal-content">
-        <h2>Game Over</h2>
-        <p>No more room for gold.</p>
-        <p>Final score: <span id="finalScore">0</span></p>
-        <button id="restartBtn" class="primary-btn">Play Again</button>
+        <h2 data-i18n="gameOver">Game Over</h2>
+        <p data-i18n="noMoreRoom">No more room for gold.</p>
+        <p><span data-i18n="finalScore">Final score</span>: <span id="finalScore">0</span></p>
+        <button id="restartBtn" class="primary-btn" data-i18n="playAgain">Play Again</button>
       </div>
     </div>
 
     <div id="itemModal" class="modal hidden">
       <div class="modal-content">
-        <h2>Item Inventory</h2>
+        <h2 data-i18n="itemInventory">Item Inventory</h2>
         <div class="item-grid">
           <div class="item-card" data-item="midas">
             <div class="item-icon">👑</div>
-            <div class="item-name">Midas Touch</div>
-            <div class="item-description">Turn 3×3 center area to 24K Gold</div>
+            <div class="item-name" data-i18n="midasTouch">Midas Touch</div>
+            <div class="item-description" data-i18n="midasDesc">Turn 3×3 center area to 24K Gold</div>
             <div class="item-count-wrapper">
-              <span class="item-count-label">Count:</span>
-              <span class="item-count" id="itemMidasCount">0</span>
+              <span class="item-count-label" data-i18n="countLabel">Count:</span> <span class="item-count" id="itemMidasCount">0</span>
             </div>
-            <button class="item-use-btn" data-item="midas">Use</button>
+            <button class="item-use-btn" data-item="midas" data-i18n="use">Use</button>
           </div>
           <div class="item-card" data-item="launder">
             <div class="item-icon">💼</div>
-            <div class="item-name">Money Launder</div>
-            <div class="item-description">Refresh all 3 active blocks</div>
+            <div class="item-name" data-i18n="moneyLaunder">Money Launder</div>
+            <div class="item-description" data-i18n="launderDesc">Refresh all 3 active blocks</div>
             <div class="item-count-wrapper">
-              <span class="item-count-label">Count:</span>
-              <span class="item-count" id="itemLaunderCount">0</span>
+              <span class="item-count-label" data-i18n="countLabel">Count:</span> <span class="item-count" id="itemLaunderCount">0</span>
             </div>
-            <button class="item-use-btn" data-item="launder">Use</button>
+            <button class="item-use-btn" data-item="launder" data-i18n="use">Use</button>
           </div>
           <div class="item-card" data-item="hammer">
             <div class="item-icon">🔨</div>
-            <div class="item-name">Golden Hammer</div>
-            <div class="item-description">Clear 4×4 center area</div>
+            <div class="item-name" data-i18n="goldenHammer">Golden Hammer</div>
+            <div class="item-description" data-i18n="hammerDesc">Clear 4×4 center area</div>
             <div class="item-count-wrapper">
-              <span class="item-count-label">Count:</span>
-              <span class="item-count" id="itemHammerCount">0</span>
+              <span class="item-count-label" data-i18n="countLabel">Count:</span> <span class="item-count" id="itemHammerCount">0</span>
             </div>
-            <button class="item-use-btn" data-item="hammer">Use</button>
+            <button class="item-use-btn" data-item="hammer" data-i18n="use">Use</button>
           </div>
           <div class="item-card" data-item="tax">
             <div class="item-icon">📋</div>
-            <div class="item-name">Tax Break</div>
-            <div class="item-description">Clear all blocks of most common type</div>
+            <div class="item-name" data-i18n="taxBreak">Tax Break</div>
+            <div class="item-description" data-i18n="taxDesc">Clear all blocks of most common type</div>
             <div class="item-count-wrapper">
-              <span class="item-count-label">Count:</span>
-              <span class="item-count" id="itemTaxCount">0</span>
+              <span class="item-count-label" data-i18n="countLabel">Count:</span> <span class="item-count" id="itemTaxCount">0</span>
             </div>
-            <button class="item-use-btn" data-item="tax">Use</button>
+            <button class="item-use-btn" data-item="tax" data-i18n="use">Use</button>
           </div>
         </div>
-        <button id="closeItemModal" class="secondary-btn">Close</button>
+        <button id="closeItemModal" class="secondary-btn" data-i18n="close">Close</button>
+      </div>
+    </div>
+
+    <div id="helpModal" class="modal hidden">
+      <div class="modal-content help-modal-content">
+        <h2 data-i18n="helpTitle">How to Play</h2>
+        <div class="help-content">
+          <p data-i18n="helpBasic">Place blocks on the 8×8 board. Drag a block and drop it on a valid spot.</p>
+          <p data-i18n="helpClear">When a row or column is completely filled, it clears and you earn points.</p>
+          <p data-i18n="helpScore">Higher metals score more: Copper(10) → Silver(20) → Platinum(30) → Rose Gold(40) → 24K Gold(50).</p>
+          <p data-i18n="helpCombo">Clear lines consecutively for combo multiplier. 3-combo grants a random item!</p>
+          <p data-i18n="helpItems">Items: Midas Touch, Money Launder, Golden Hammer, Tax Break. Use them from the Items button.</p>
+          <p data-i18n="helpGoal">Survive as long as possible. Game over when no block can be placed.</p>
+        </div>
+        <button id="closeHelpModal" class="secondary-btn" data-i18n="close">Close</button>
+      </div>
+    </div>
+
+    <div id="settingsModal" class="modal hidden">
+      <div class="modal-content settings-modal-content">
+        <h2 data-i18n="settings">Settings</h2>
+        <div class="settings-list">
+          <label class="settings-row">
+            <span class="settings-label" data-i18n="language">Language</span>
+            <select id="settingLang">
+              <option value="en">English</option>
+              <option value="ko">한국어</option>
+            </select>
+          </label>
+          <label class="settings-row">
+            <span class="settings-label" data-i18n="backgroundMusic">Background Music</span>
+            <input type="checkbox" id="settingBGM" checked />
+          </label>
+          <label class="settings-row">
+            <span class="settings-label" data-i18n="soundEffects">Sound Effects</span>
+            <input type="checkbox" id="settingSFX" checked />
+          </label>
+          <label class="settings-row">
+            <span class="settings-label" data-i18n="screenShake">Screen Shake</span>
+            <input type="checkbox" id="settingScreenShake" checked />
+          </label>
+          <button type="button" id="howToPlayBtn" class="settings-help-btn" data-i18n="howToPlay">How to Play</button>
+        </div>
+        <button id="closeSettingsModal" class="secondary-btn" data-i18n="close">Close</button>
       </div>
     </div>
 
