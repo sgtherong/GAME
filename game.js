@@ -1995,16 +1995,27 @@ function showItemEffect(itemType) {
 
 const ITEMS_NEED_POSITION = ['midas', 'hammer'];
 
+let itemTouchPromptEl = null;
+
 function enterItemSelectionMode(itemType) {
   itemSelectionMode = { active: true, itemType };
-  if (lastGainEl) lastGainEl.textContent = 'Click on board to select position (ESC to cancel)';
   if (boardWrap) boardWrap.classList.add('item-selection-mode');
+  if (effectLayer) {
+    itemTouchPromptEl = document.createElement('div');
+    itemTouchPromptEl.className = 'item-touch-prompt';
+    itemTouchPromptEl.setAttribute('aria-hidden', 'true');
+    itemTouchPromptEl.innerHTML = '<span class="item-touch-icon">👆</span><span class="item-touch-text">보드판을 터치하세요</span>';
+    effectLayer.appendChild(itemTouchPromptEl);
+  }
 }
 
 function exitItemSelectionMode() {
   itemSelectionMode = { active: false, itemType: null };
   clearItemTargetPreview();
-  if (lastGainEl) lastGainEl.textContent = '';
+  if (itemTouchPromptEl && itemTouchPromptEl.parentNode) {
+    itemTouchPromptEl.parentNode.removeChild(itemTouchPromptEl);
+    itemTouchPromptEl = null;
+  }
   if (boardWrap) boardWrap.classList.remove('item-selection-mode');
 }
 
