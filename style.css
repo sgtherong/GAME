@@ -1001,6 +1001,21 @@ body.fever-mode .app {
   box-shadow: 0 0 12px rgba(248, 113, 113, 0.7);
 }
 
+/* 아이템 위치 선택: 대상 영역 미리보기 */
+.cell.item-target-preview .cell-inner {
+  background: linear-gradient(145deg, #fde047, #facc15);
+  box-shadow: 0 0 16px rgba(250, 204, 21, 0.8);
+  outline: 2px solid rgba(254, 240, 138, 0.9);
+}
+
+.board-wrap.item-selection-mode {
+  cursor: crosshair;
+}
+
+.board-wrap.item-selection-mode .cell {
+  cursor: pointer;
+}
+
 .cell.clearing .cell-inner {
   animation: clearPulse 0.26s ease-out forwards;
 }

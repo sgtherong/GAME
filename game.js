@@ -170,6 +170,8 @@ let feverModeTimer = null;
 /** 콤보 타이머 (10초 카운트다운) */
 let comboTimer = null;
 let comboTimeLeft = 10;
+/** 아이템 위치 선택 모드 (midas, hammer만 해당) */
+let itemSelectionMode = { active: false, itemType: null };
 
 const boardEl = document.getElementById('board');
 const piecesEl = document.getElementById('pieces');
@@ -1244,8 +1246,31 @@ function spawnClearParticles(fullRows, fullCols) {
 function clearPreview() {
   if (!boardEl) return;
   boardEl.querySelectorAll('.cell').forEach((cell) => {
-    cell.classList.remove('preview-okay', 'preview-bad');
+    cell.classList.remove('preview-okay', 'preview-bad', 'item-target-preview');
   });
+}
+
+function clearItemTargetPreview() {
+  if (!boardEl) return;
+  boardEl.querySelectorAll('.cell').forEach((cell) => {
+    cell.classList.remove('item-target-preview');
+  });
+}
+
+/** 아이템 대상 영역 미리보기 (3×3 또는 4×4, 클릭한 셀을 중심으로) */
+function applyItemTargetPreview(centerRow, centerCol, size) {
+  if (!boardEl) return;
+  clearItemTargetPreview();
+  const r0 = Math.max(0, centerRow - 1);
+  const r1 = Math.min(BOARD_SIZE - 1, centerRow + (size - 2));
+  const c0 = Math.max(0, centerCol - 1);
+  const c1 = Math.min(BOARD_SIZE - 1, centerCol + (size - 2));
+  for (let r = r0; r <= r1; r++) {
+    for (let c = c0; c <= c1; c++) {
+      const cell = boardEl.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);
+      if (cell && board[r][c] === 1) cell.classList.add('item-target-preview');
+    }
+  }
 }
 
 function applyPreview(shape, baseRow, baseCol, isValid) {
@@ -1622,6 +1647,7 @@ function handleGameOver() {
 }
 
 function resetGame() {
+  if (itemSelectionMode.active) exitItemSelectionMode();
   cleanupDrag();
   board = createEmptyBoard();
   cellVariants = Array.from({ length: BOARD_SIZE }, () => Array(BOARD_SIZE).fill(null));
@@ -1665,13 +1691,13 @@ function resetGame() {
   }
 }
 
-function useMidasTouch() {
+function useMidasTouch(centerRow, centerCol) {
   if (items.midas <= 0) return false;
-  const centerRow = Math.floor(BOARD_SIZE / 2);
-  const centerCol = Math.floor(BOARD_SIZE / 2);
+  const cr = centerRow != null ? centerRow : Math.floor(BOARD_SIZE / 2);
+  const cc = centerCol != null ? centerCol : Math.floor(BOARD_SIZE / 2);
   const targetCells = [];
-  for (let r = centerRow - 1; r <= centerRow + 1; r++) {
-    for (let c = centerCol - 1; c <= centerCol + 1; c++) {
+  for (let r = cr - 1; r <= cr + 1; r++) {
+    for (let c = cc - 1; c <= cc + 1; c++) {
       if (r >= 0 && r < BOARD_SIZE && c >= 0 && c < BOARD_SIZE && board[r][c] === 1) {
         targetCells.push({ r, c });
       }
@@ -1689,23 +1715,18 @@ function useMidasTouch() {
   renderBoard();
   setTimeout(() => {
     spawnItemExplosionEffect(targetCells);
-    let clearedScore = 0;
-    targetCells.forEach(({ r, c }) => {
-      clearedScore += METAL_SCORES[METAL_TYPES.GOLD_24K];
-      board[r][c] = 0;
-      cellVariants[r][c] = null;
+    clearCellsWithRandomOrder(targetCells, () => METAL_SCORES[METAL_TYPES.GOLD_24K], (count, clearedScore) => {
+      score += clearedScore;
+      screenShake();
+      scoreFlash();
+      floatScorePopup(clearedScore);
+      if (score > bestScore) {
+        bestScore = score;
+        saveBestScore();
+      }
+      updateScoreDisplays(`Midas Touch: ${count} blocks turned to gold!`);
+      updateRank();
     });
-    score += clearedScore;
-    renderBoard();
-    screenShake();
-    scoreFlash();
-    floatScorePopup(clearedScore);
-    if (score > bestScore) {
-      bestScore = score;
-      saveBestScore();
-    }
-    updateScoreDisplays(`Midas Touch: ${targetCells.length} blocks turned to gold!`);
-    updateRank();
   }, 300);
   items.midas--;
   saveItems();
@@ -1723,41 +1744,33 @@ function useMoneyLaunder() {
   return true;
 }
 
-function useGoldenHammer() {
+function useGoldenHammer(centerRow, centerCol) {
   if (items.hammer <= 0) return false;
-  const centerRow = Math.floor(BOARD_SIZE / 2);
-  const centerCol = Math.floor(BOARD_SIZE / 2);
+  const cr = centerRow != null ? centerRow : Math.floor(BOARD_SIZE / 2);
+  const cc = centerCol != null ? centerCol : Math.floor(BOARD_SIZE / 2);
   const targetCells = [];
-  for (let r = centerRow - 1; r <= centerRow + 2; r++) {
-    for (let c = centerCol - 1; c <= centerCol + 2; c++) {
+  for (let r = cr - 1; r <= cr + 2; r++) {
+    for (let c = cc - 1; c <= cc + 2; c++) {
       if (r >= 0 && r < BOARD_SIZE && c >= 0 && c < BOARD_SIZE && board[r][c] === 1) {
         targetCells.push({ r, c });
       }
     }
   }
   spawnItemExplosionEffect(targetCells);
-  let clearedCount = 0;
-  let clearedScore = 0;
-  for (const { r, c } of targetCells) {
-    const variant = cellVariants[r][c] ?? 0;
-    board[r][c] = 0;
-    cellVariants[r][c] = null;
-    clearedCount++;
-    clearedScore += METAL_SCORES[variant];
-  }
-  if (clearedCount > 0) {
-    score += clearedScore;
-    renderBoard();
-    screenShake();
-    scoreFlash();
-    floatScorePopup(clearedScore);
-    if (score > bestScore) {
-      bestScore = score;
-      saveBestScore();
+  clearCellsWithRandomOrder(targetCells, (r, c) => METAL_SCORES[cellVariants[r][c] ?? 0], (clearedCount, clearedScore) => {
+    if (clearedCount > 0) {
+      score += clearedScore;
+      screenShake();
+      scoreFlash();
+      floatScorePopup(clearedScore);
+      if (score > bestScore) {
+        bestScore = score;
+        saveBestScore();
+      }
+      updateScoreDisplays(`Golden Hammer cleared ${clearedCount} blocks!`);
+      updateRank();
     }
-    updateScoreDisplays(`Golden Hammer cleared ${clearedCount} blocks!`);
-    updateRank();
-  }
+  });
   items.hammer--;
   saveItems();
   updateItemDisplays();
@@ -1784,31 +1797,60 @@ function useTaxBreak() {
     }
   }
   spawnItemExplosionEffect(targetCells);
-  let clearedCount = 0;
-  let clearedScore = 0;
-  for (const { r, c } of targetCells) {
-    board[r][c] = 0;
-    cellVariants[r][c] = null;
-    clearedCount++;
-    clearedScore += METAL_SCORES[mostCommonVariant];
-  }
-  if (clearedCount > 0) {
-    score += clearedScore;
-    renderBoard();
-    screenShake();
-    scoreFlash();
-    floatScorePopup(clearedScore);
-    if (score > bestScore) {
-      bestScore = score;
-      saveBestScore();
+  clearCellsWithRandomOrder(targetCells, () => METAL_SCORES[mostCommonVariant], (clearedCount, clearedScore) => {
+    if (clearedCount > 0) {
+      score += clearedScore;
+      screenShake();
+      scoreFlash();
+      floatScorePopup(clearedScore);
+      if (score > bestScore) {
+        bestScore = score;
+        saveBestScore();
+      }
+      updateScoreDisplays(`Tax Break cleared ${clearedCount} ${METAL_NAMES[mostCommonVariant]} blocks!`);
+      updateRank();
     }
-    updateScoreDisplays(`Tax Break cleared ${clearedCount} ${METAL_NAMES[mostCommonVariant]} blocks!`);
-    updateRank();
-  }
+  });
   items.tax--;
   saveItems();
   updateItemDisplays();
   return true;
+}
+
+/** 아이템으로 제거되는 블럭을 랜덤 순서로 사라지게 함 */
+function clearCellsWithRandomOrder(targetCells, getScoreForCell, onComplete) {
+  if (!targetCells.length || !boardEl) {
+    if (onComplete) onComplete(0, 0);
+    return;
+  }
+  const shuffled = [...targetCells].sort(() => Math.random() - 0.5);
+  let maxDelay = 0;
+  shuffled.forEach(({ r, c }, i) => {
+    const delay = i * 25 + Math.random() * 50;
+    maxDelay = Math.max(maxDelay, delay);
+    const cell = boardEl.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);
+    if (cell) {
+      cell.classList.add('clearing');
+      const inner = cell.querySelector('.cell-inner');
+      if (inner) inner.style.animationDelay = delay + 'ms';
+    }
+  });
+
+  setTimeout(() => {
+    let clearedScore = 0;
+    targetCells.forEach(({ r, c }) => {
+      clearedScore += getScoreForCell ? getScoreForCell(r, c) : 0;
+      board[r][c] = 0;
+      cellVariants[r][c] = null;
+    });
+    renderBoard();
+    boardEl?.querySelectorAll('.cell.clearing').forEach((cell) => {
+      cell.classList.remove('clearing');
+      const inner = cell.querySelector('.cell-inner');
+      if (inner) inner.style.animationDelay = '';
+    });
+    if (onComplete) onComplete(targetCells.length, clearedScore);
+  }, maxDelay + 280);
 }
 
 const ITEM_NAMES = {
@@ -1951,21 +1993,34 @@ function showItemEffect(itemType) {
   setTimeout(() => overlay.remove(), 2200);
 }
 
+const ITEMS_NEED_POSITION = ['midas', 'hammer'];
+
+function enterItemSelectionMode(itemType) {
+  itemSelectionMode = { active: true, itemType };
+  if (lastGainEl) lastGainEl.textContent = 'Click on board to select position (ESC to cancel)';
+  if (boardWrap) boardWrap.classList.add('item-selection-mode');
+}
+
+function exitItemSelectionMode() {
+  itemSelectionMode = { active: false, itemType: null };
+  clearItemTargetPreview();
+  if (lastGainEl) lastGainEl.textContent = '';
+  if (boardWrap) boardWrap.classList.remove('item-selection-mode');
+}
+
 function handleItemUse(itemType) {
   if (!itemType || !ITEM_TYPES.includes(itemType)) return;
   if (items[itemType] <= 0) return;
   const itemName = ITEM_NAMES[itemType] || itemType;
   if (!confirm(`Use ${itemName}?`)) return;
   let used = false;
+  if (ITEMS_NEED_POSITION.includes(itemType)) {
+    enterItemSelectionMode(itemType);
+    return;
+  }
   switch (itemType) {
-    case 'midas':
-      used = useMidasTouch();
-      break;
     case 'launder':
       used = useMoneyLaunder();
-      break;
-    case 'hammer':
-      used = useGoldenHammer();
       break;
     case 'tax':
       used = useTaxBreak();
@@ -1973,6 +2028,19 @@ function handleItemUse(itemType) {
     default:
       return;
   }
+  if (used) {
+    closeItemModal();
+    showItemEffect(itemType);
+  }
+}
+
+function applyItemAtPosition(centerRow, centerCol) {
+  const { itemType } = itemSelectionMode;
+  if (!itemType) return;
+  exitItemSelectionMode();
+  let used = false;
+  if (itemType === 'midas') used = useMidasTouch(centerRow, centerCol);
+  else if (itemType === 'hammer') used = useGoldenHammer(centerRow, centerCol);
   if (used) {
     closeItemModal();
     showItemEffect(itemType);
@@ -2024,12 +2092,49 @@ if (itemModal) {
   });
 }
 
-// ESC 키로 모달 닫기
+// ESC 키로 모달 닫기 / 아이템 선택 모드 취소
 document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape' && itemModal && !itemModal.classList.contains('hidden')) {
+  if (e.key !== 'Escape') return;
+  if (itemSelectionMode.active) {
+    exitItemSelectionMode();
+    return;
+  }
+  if (itemModal && !itemModal.classList.contains('hidden')) {
     closeItemModal();
   }
 });
+
+// 아이템 위치 선택: 보드 클릭
+if (boardEl) {
+  boardEl.addEventListener('click', (e) => {
+    if (!itemSelectionMode.active) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const cellPos = getBoardCellFromPoint(e.clientX, e.clientY);
+    if (cellPos) applyItemAtPosition(cellPos.row, cellPos.col);
+  });
+  boardEl.addEventListener('mousemove', (e) => {
+    if (!itemSelectionMode.active) return;
+    const cellPos = getBoardCellFromPoint(e.clientX, e.clientY);
+    if (cellPos) {
+      const size = itemSelectionMode.itemType === 'hammer' ? 4 : 3;
+      applyItemTargetPreview(cellPos.row, cellPos.col, size);
+    } else {
+      clearItemTargetPreview();
+    }
+  });
+  boardEl.addEventListener('mouseleave', () => {
+    if (itemSelectionMode.active) clearItemTargetPreview();
+  });
+  boardEl.addEventListener('touchstart', (e) => {
+    if (!itemSelectionMode.active) return;
+    const touch = e.touches && e.touches[0];
+    if (!touch) return;
+    e.preventDefault();
+    const cellPos = getBoardCellFromPoint(touch.clientX, touch.clientY);
+    if (cellPos) applyItemAtPosition(cellPos.row, cellPos.col);
+  }, { passive: false });
+}
 
 // 아이템 사용 버튼 이벤트 (동적으로 생성되는 요소 대응)
 function setupItemButtons() {
